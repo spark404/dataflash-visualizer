@@ -35,12 +35,13 @@ exports.handler = (event, context, callback) => {
         console.log("Entering parseDatafile with key=" + key)
         const defer = Q.defer();
 
-        dataflashlog.parse(s3file.Body, function(err, data) {
+        dataflashlog.parse(s3file.Body, function(err, parsedData) {
             if (err) {
                 console.log("Error: " + err)
                 defer.reject()
             }
 
+            var data = {}
             data.contents = {}
             data.contents.power = false
             data.contents.altitude = false
@@ -49,8 +50,10 @@ exports.handler = (event, context, callback) => {
             data.contents.imu = false
             data.contents.ntun = false
             data.contents.err = false
+            data.messages = []
+            data.parameters = {}
 
-            data.messages.forEach(function(event) {
+            parsedData.messages.forEach(function(event) {
             	switch(event.name) {
                 case "ERR":
                 	data.contents.err = true
@@ -73,10 +76,18 @@ exports.handler = (event, context, callback) => {
                 case "BARO":
                 	data.contents.attitude = true
                 	break;
+                case "PARM":
+                    data.parameters[event.Name] = event.Value
+                    break;
+                case "MSG":
+                    var message = {}
+                    message.text = event.Message
+                    message.timestamp = parsedData.referenceTimestamp.reference + ((event.TimeUS - parsedData.referenceTimestamp.timeus) / 1000)
+                    data.messages.push(message)
+                    break;
                 }
             })
             
-            console.log("Contents " + util.inspect(data.contents))
             defer.resolve(data)
         })
 
@@ -121,7 +132,15 @@ exports.handler = (event, context, callback) => {
           	ntun: {
           		Action: "PUT",
           		Value: data.contents.ntun
-          	}
+          	},
+            messages: {
+              Action: "PUT",
+              Value: data.messages
+            },
+            parameters: {
+              Action: "PUT",
+              Value: data.parameters
+            }
           }
         }
 

@@ -1,12 +1,8 @@
 #!/bin/bash
 
-if [ ! -d "build" ]
-then
-	mkdir build
-fi
-
 lessc less/customize.less web/css/customize.css
 
+# Do npm install to update all the required modules
 ( 
 	cd aws
 	
@@ -17,7 +13,6 @@ lessc less/customize.less web/css/customize.css
 		(
 			cd $name
 			npm install
-			zip -r ../../build/${name}.zip .
 		)
 	done
 )

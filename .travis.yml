@@ -146,9 +146,9 @@ deploy:
     role: "arn:aws:iam::199710627848:role/uploadurl-generator"
     runtime: "nodejs6.10"
     module_name: "handler"
-    handler_name: "handler"
+    handler_name: "requestUploadURL"
     description: "Generates S3 upload url, see https://www.netlify.com/blog/2016/11/17/serverless-file-uploads/"
-    timeout: 3
+    timeout: 10
     memory_size: 128
     zip: aws/dataflashupload-requestUploadUrl
     access_key_id: AKIAJZMBZYLHJEGLJL5A

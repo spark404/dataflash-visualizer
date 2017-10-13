@@ -23,7 +23,7 @@ deploy:
     handler_name: "handler"
     description: "Returns power data for a flashlog when called from the Api Gateway"
     timeout: 20
-    memory_size: 512
+    memory_size: 1536
     zip: aws/dataflash-retrievePowerData
     access_key_id: AKIAJZMBZYLHJEGLJL5A
     secret_access_key:
@@ -37,7 +37,7 @@ deploy:
     handler_name: "handler"
     description: "Returns attitude data for a flashlog when called from the Api Gateway"
     timeout: 20
-    memory_size: 512
+    memory_size: 1536
     zip: aws/dataflash-retrieveAttitude
     access_key_id: AKIAJZMBZYLHJEGLJL5A
     secret_access_key:
@@ -51,7 +51,7 @@ deploy:
     handler_name: "handler"
     description: "Returns error data for a flashlog when called from the Api Gateway"
     timeout: 20
-    memory_size: 512
+    memory_size: 1536
     zip: aws/dataflash-retrieveErrors
     access_key_id: AKIAJZMBZYLHJEGLJL5A
     secret_access_key:
@@ -65,7 +65,7 @@ deploy:
     handler_name: "handler"
     description: "Returns IMU data for a flashlog when called from the Api Gateway"
     timeout: 20
-    memory_size: 512
+    memory_size: 1536
     zip: aws/dataflash-retrieveImu
     access_key_id: AKIAJZMBZYLHJEGLJL5A
     secret_access_key:
@@ -79,7 +79,7 @@ deploy:
     handler_name: "handler"
     description: "Returns gps route data for a flashlog when called from the Api Gateway"
     timeout: 20
-    memory_size: 512
+    memory_size: 1536
     zip: aws/dataflash-retrieveGpsPath
     access_key_id: AKIAJZMBZYLHJEGLJL5A
     secret_access_key:
@@ -93,7 +93,7 @@ deploy:
     handler_name: "handler"
     description: "Returns metadata data from dynamodb for a flashlog when called from the Api Gateway"
     timeout: 10
-    memory_size: 128
+    memory_size: 1536
     zip: aws/dataflash-retrieveDataflashlog
     access_key_id: AKIAJZMBZYLHJEGLJL5A
     secret_access_key:
@@ -107,7 +107,7 @@ deploy:
     handler_name: "handler"
     description: "Returns all dataflash logs in dynamodb when called from the Api Gateway"
     timeout: 10
-    memory_size: 128
+    memory_size: 1536
     zip: aws/dataflash-listDataflashlogs
     access_key_id: AKIAJZMBZYLHJEGLJL5A
     secret_access_key:
@@ -121,7 +121,7 @@ deploy:
     handler_name: "handler"
     description: "Triggers on new item in dynamodb and updates the metadata for a new log"
     timeout: 300
-    memory_size: 512
+    memory_size: 1536
     zip: aws/dataflash-newitemindbtrigger
     access_key_id: AKIAJZMBZYLHJEGLJL5A
     secret_access_key:
@@ -135,7 +135,7 @@ deploy:
     handler_name: "handler"
     description: "An Amazon S3 trigger that retrieves metadata for the object that has been updated."
     timeout: 300
-    memory_size: 512
+    memory_size: 1536
     zip: aws/dataflashupload-metadata-trigger
     access_key_id: AKIAJZMBZYLHJEGLJL5A
     secret_access_key:
@@ -149,7 +149,7 @@ deploy:
     handler_name: "requestUploadURL"
     description: "Generates S3 upload url, see https://www.netlify.com/blog/2016/11/17/serverless-file-uploads/"
     timeout: 10
-    memory_size: 128
+    memory_size: 1536
     zip: aws/dataflashupload-requestUploadUrl
     access_key_id: AKIAJZMBZYLHJEGLJL5A
     secret_access_key:

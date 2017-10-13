@@ -92,7 +92,7 @@ deploy:
     module_name: "handler"
     handler_name: "handler"
     description: "Returns metadata data from dynamodb for a flashlog when called from the Api Gateway"
-    timeout: 3
+    timeout: 10
     memory_size: 128
     zip: aws/dataflash-retrieveDataflashlog
     access_key_id: AKIAJZMBZYLHJEGLJL5A
@@ -106,13 +106,51 @@ deploy:
     module_name: "handler"
     handler_name: "handler"
     description: "Returns all dataflash logs in dynamodb when called from the Api Gateway"
-    timeout: 3
+    timeout: 10
     memory_size: 128
     zip: aws/dataflash-listDataflashlogs
     access_key_id: AKIAJZMBZYLHJEGLJL5A
     secret_access_key:
       secure: cAX/MdNt926ZyMvwiHEiU0LBWHxiTr6O3Y/WW96iVluCmZpifOl+ZzMpTTmc6qDAQ6dPbk8MCYMl+MdESybpeTDQb/fgBh9j6DW28D+hPI1U/V23jrVx67SUPN3GyIQMxiCOfKymx2Bw1m05D34SGFr5wjhekvidajCwMc6AuUUo7WK4vFkeZSWOtqYs4/cAjhhAR11uqd48UWiI/HHrqgG0XDUES97tUJwuEEfrEAa2KJoyA34+HGQdT2gu4fqE73/lCg428qZSoqAmI/BugKI8lKXOjHg3WqDuvgkiTlpsm42551hRnQqAIXrdhPn75WUdfWWu04qy33cLSSxJLtsNGf3ZVYsVArDOk6t2os3qDV63g7HxvVwfOLLMwmb+rpbKp4OB8ku4Hrt5pzn7khT5ueADfNsLtckDkKIsqcW6nnjliT6Jc3eagCy2Bx/aXIjxJCQUisRzEowoN0aYovvxTYu7umHdiKq/eweNFh3+zOFqaT52rZlEnIXH0OSQqxIokVc9+cCUfEf+eSYRJNI+Zr3ybNM0bcj0Kf8RdnfN5nFYwYnWtBqb0MAYbf17kOoZ20VERxob/0rjWTknVjLA3kAwRXLKwp29emYVPJ6y9gXZa5PJsxCue4bQlgrn5AY6iZXz4m2OxJl9Iql41cjZZF5l/2HXxuPFV7QetVw=
-
-#dataflashupload-metadata-trigger
-#dataflash-newitemindbtrigger
-#dataflashupload-requestUploadUrl   
+  - provider: lambda
+    function_name: "dataflash-newitemindbtrigger"
+    region: "eu-west-2"
+    role: "arn:aws:iam::199710627848:role/dataflashvisualizer-lambda-dataprocessor"
+    runtime: "nodejs6.10"
+    module_name: "handler"
+    handler_name: "handler"
+    description: "Triggers on new item in dynamodb and updates the metadata for a new log"
+    timeout: 300
+    memory_size: 512
+    zip: aws/dataflash-newitemindbtrigger
+    access_key_id: AKIAJZMBZYLHJEGLJL5A
+    secret_access_key:
+      secure: cAX/MdNt926ZyMvwiHEiU0LBWHxiTr6O3Y/WW96iVluCmZpifOl+ZzMpTTmc6qDAQ6dPbk8MCYMl+MdESybpeTDQb/fgBh9j6DW28D+hPI1U/V23jrVx67SUPN3GyIQMxiCOfKymx2Bw1m05D34SGFr5wjhekvidajCwMc6AuUUo7WK4vFkeZSWOtqYs4/cAjhhAR11uqd48UWiI/HHrqgG0XDUES97tUJwuEEfrEAa2KJoyA34+HGQdT2gu4fqE73/lCg428qZSoqAmI/BugKI8lKXOjHg3WqDuvgkiTlpsm42551hRnQqAIXrdhPn75WUdfWWu04qy33cLSSxJLtsNGf3ZVYsVArDOk6t2os3qDV63g7HxvVwfOLLMwmb+rpbKp4OB8ku4Hrt5pzn7khT5ueADfNsLtckDkKIsqcW6nnjliT6Jc3eagCy2Bx/aXIjxJCQUisRzEowoN0aYovvxTYu7umHdiKq/eweNFh3+zOFqaT52rZlEnIXH0OSQqxIokVc9+cCUfEf+eSYRJNI+Zr3ybNM0bcj0Kf8RdnfN5nFYwYnWtBqb0MAYbf17kOoZ20VERxob/0rjWTknVjLA3kAwRXLKwp29emYVPJ6y9gXZa5PJsxCue4bQlgrn5AY6iZXz4m2OxJl9Iql41cjZZF5l/2HXxuPFV7QetVw=
+  - provider: lambda
+    function_name: "dataflashupload-metadata-trigger"
+    region: "eu-west-2"
+    role: "arn:aws:iam::199710627848:role/service-role/dataflashupload-trigger-role"
+    runtime: "nodejs6.10"
+    module_name: "metadata"
+    handler_name: "handler"
+    description: "An Amazon S3 trigger that retrieves metadata for the object that has been updated."
+    timeout: 300
+    memory_size: 512
+    zip: aws/dataflashupload-metadata-trigger
+    access_key_id: AKIAJZMBZYLHJEGLJL5A
+    secret_access_key:
+      secure: cAX/MdNt926ZyMvwiHEiU0LBWHxiTr6O3Y/WW96iVluCmZpifOl+ZzMpTTmc6qDAQ6dPbk8MCYMl+MdESybpeTDQb/fgBh9j6DW28D+hPI1U/V23jrVx67SUPN3GyIQMxiCOfKymx2Bw1m05D34SGFr5wjhekvidajCwMc6AuUUo7WK4vFkeZSWOtqYs4/cAjhhAR11uqd48UWiI/HHrqgG0XDUES97tUJwuEEfrEAa2KJoyA34+HGQdT2gu4fqE73/lCg428qZSoqAmI/BugKI8lKXOjHg3WqDuvgkiTlpsm42551hRnQqAIXrdhPn75WUdfWWu04qy33cLSSxJLtsNGf3ZVYsVArDOk6t2os3qDV63g7HxvVwfOLLMwmb+rpbKp4OB8ku4Hrt5pzn7khT5ueADfNsLtckDkKIsqcW6nnjliT6Jc3eagCy2Bx/aXIjxJCQUisRzEowoN0aYovvxTYu7umHdiKq/eweNFh3+zOFqaT52rZlEnIXH0OSQqxIokVc9+cCUfEf+eSYRJNI+Zr3ybNM0bcj0Kf8RdnfN5nFYwYnWtBqb0MAYbf17kOoZ20VERxob/0rjWTknVjLA3kAwRXLKwp29emYVPJ6y9gXZa5PJsxCue4bQlgrn5AY6iZXz4m2OxJl9Iql41cjZZF5l/2HXxuPFV7QetVw=
+  - provider: lambda
+    function_name: "dataflashupload-requestUploadUrl"
+    region: "eu-west-2"
+    role: "arn:aws:iam::199710627848:role/uploadurl-generator"
+    runtime: "nodejs6.10"
+    module_name: "handler"
+    handler_name: "handler"
+    description: "Generates S3 upload url, see https://www.netlify.com/blog/2016/11/17/serverless-file-uploads/"
+    timeout: 3
+    memory_size: 128
+    zip: aws/dataflashupload-requestUploadUrl
+    access_key_id: AKIAJZMBZYLHJEGLJL5A
+    secret_access_key:
+      secure: cAX/MdNt926ZyMvwiHEiU0LBWHxiTr6O3Y/WW96iVluCmZpifOl+ZzMpTTmc6qDAQ6dPbk8MCYMl+MdESybpeTDQb/fgBh9j6DW28D+hPI1U/V23jrVx67SUPN3GyIQMxiCOfKymx2Bw1m05D34SGFr5wjhekvidajCwMc6AuUUo7WK4vFkeZSWOtqYs4/cAjhhAR11uqd48UWiI/HHrqgG0XDUES97tUJwuEEfrEAa2KJoyA34+HGQdT2gu4fqE73/lCg428qZSoqAmI/BugKI8lKXOjHg3WqDuvgkiTlpsm42551hRnQqAIXrdhPn75WUdfWWu04qy33cLSSxJLtsNGf3ZVYsVArDOk6t2os3qDV63g7HxvVwfOLLMwmb+rpbKp4OB8ku4Hrt5pzn7khT5ueADfNsLtckDkKIsqcW6nnjliT6Jc3eagCy2Bx/aXIjxJCQUisRzEowoN0aYovvxTYu7umHdiKq/eweNFh3+zOFqaT52rZlEnIXH0OSQqxIokVc9+cCUfEf+eSYRJNI+Zr3ybNM0bcj0Kf8RdnfN5nFYwYnWtBqb0MAYbf17kOoZ20VERxob/0rjWTknVjLA3kAwRXLKwp29emYVPJ6y9gXZa5PJsxCue4bQlgrn5AY6iZXz4m2OxJl9Iql41cjZZF5l/2HXxuPFV7QetVw=

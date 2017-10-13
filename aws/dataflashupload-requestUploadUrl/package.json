@@ -1,11 +1,8 @@
 {  
    "license":"Apache-2.0",
-   "description":"Returns all dataflash logs in dynamodb when called from the Api Gateway",
+   "description":"Generates S3 upload url, see https://www.netlify.com/blog/2016/11/17/serverless-file-uploads/",
    "repository":{  
       "type":"git",
       "url":"https://github.com/spark404/dataflash-visualizer.git"
-   },
-   "dependencies":{  
-      "kew":"0.7.0"
    }
 }

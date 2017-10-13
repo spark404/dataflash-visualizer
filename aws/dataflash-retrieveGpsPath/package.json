@@ -1,11 +1,12 @@
 {  
    "license":"Apache-2.0",
-   "description":"Returns all dataflash logs in dynamodb when called from the Api Gateway",
+   "description":"Returns gps route data for a flashlog when called from the Api Gateway",
    "repository":{  
       "type":"git",
       "url":"https://github.com/spark404/dataflash-visualizer.git"
    },
    "dependencies":{  
-      "kew":"0.7.0"
+      "kew":"0.7.0",
+      "dataflashlog":"0.0.3"
    }
 }

@@ -431,12 +431,10 @@ function displayPowerPanel(data) {
     var volts = []
     var curr = []
     var currtot = []
-    var index = 0;
     data.forEach(function(line) {
-        volts.push([index, line.volt])
-        curr.push([index, line.curr])
-        currtot.push([index, line.currtot])
-        index = index + 1
+        volts.push([line.timestamp, line.volt])
+        curr.push([line.timestamp, line.curr])
+        currtot.push([line.timestamp, line.currtot])
     })
 
     var options = {
@@ -453,7 +451,9 @@ function displayPowerPanel(data) {
             position: "nw"
         },
         xaxis: {
-            show: false
+            show: true,
+            mode: "time",
+            tickSize: [1, "minute"]
         },
         yaxix: {
             show: true

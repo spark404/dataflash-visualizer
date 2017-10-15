@@ -452,8 +452,7 @@ function displayPowerPanel(data) {
         },
         xaxis: {
             show: true,
-            mode: "time",
-            tickSize: [1, "minute"]
+            mode: "time"
         },
         yaxix: {
             show: true

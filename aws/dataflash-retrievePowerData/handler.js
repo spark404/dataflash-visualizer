@@ -9,8 +9,6 @@ exports.handler = function(event, context, callback) {
 	const s3 = new AWS.S3({ apiVersion: '2006-03-01' });
 
     function getS3Object(bucket, key) {
-        console.log("Entering getS3Object with bucket=" + bucket + " and key=" + key)
-        
         const defer = Q.defer();
         const params = {
             Bucket: bucket,
@@ -22,17 +20,13 @@ exports.handler = function(event, context, callback) {
                 defer.reject()
             }
 
-            console.log("File data : " + util.inspect(data))
-            console.log("OK")
             defer.resolve(data)
         });
         
-        console.log("Leaving getS3Object")
         return defer.promise
     }
     
     function parseDatafile(key, s3file) {
-        console.log("Entering parseDatafile with key=" + key)
         const defer = Q.defer();
 
         dataflashlog.parse(s3file.Body, function(err, data) {
@@ -41,11 +35,13 @@ exports.handler = function(event, context, callback) {
                 defer.reject()
             }
 
+            var reference = data.referenceTimestamp
             var powerData = []
             data.messages.forEach(function(event) {
             	switch(event.name) {
                 case "CURR":
                 	var powerMeasurement = {}
+                    powerMeasurement.timestamp = getTimestampForTimeUS(reference, event.TimeUS)
                 	powerMeasurement.volt = event.Volt
                 	powerMeasurement.curr = event.Curr
                 	powerMeasurement.currtot = event.CurrTot
@@ -54,17 +50,13 @@ exports.handler = function(event, context, callback) {
                 }
             })
             
-            console.log("Contents " + util.inspect(powerData))
             defer.resolve(powerData)
         })
 
-        console.log("Leaving parseDatafile")
         return defer.promise
     }
 
 	function response(data, statuscode) {
-	    console.log("Entering response")
-	    
 	    if (data === undefined) {
 	        var errorMessage = {}
 	        errorMessage.message = "No entry found in database"
@@ -86,11 +78,16 @@ exports.handler = function(event, context, callback) {
     		
     		callback(null, response)
 	    }
-	} 
+	}
+
+    function getTimestampForTimeUS(reference, tineus) {
+        return reference.reference + ((tineus - reference.timeus) / 1000)
+    } 
 
     console.log("*** MAIN ***")
     console.log("event: " + util.inspect(event))
     console.log("context: " + util.inspect(context))
+
 	getS3Object("dataflashlogs", event.pathParameters.reportid)
 		.then(data => parseDatafile(event.pathParameters.reportid, data))
 		.then(data => response(data, 200))

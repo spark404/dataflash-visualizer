@@ -11,6 +11,18 @@ exports.handler = function(event, context, callback) {
 
 		var params = {
 	    	TableName : "dataflashlogheaders",
+	    	AttributesToGet : [
+	    		"filename",
+	    		"altitude",
+	    		"attitude",
+	    		"err",
+	    		"gps",
+	    		"imu",
+	    		"ntun",
+	    		"power",
+	    		"size",
+	    		"timestamps"
+	    	]
 		};
 
 		docClient.scan(params, function(err, data) {

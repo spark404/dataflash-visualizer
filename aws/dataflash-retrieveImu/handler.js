@@ -7,6 +7,7 @@ exports.handler = function(event, context, callback) {
 	const util = require('util')
 	const dataflashlog = require('dataflashlog')
 	const s3 = new AWS.S3({ apiVersion: '2006-03-01' });
+    const ramerdouglas = require('./RamerDouglarPeuker.js')
 
     function getS3Object(bucket, key) {
         console.log("Entering getS3Object with bucket=" + bucket + " and key=" + key)
@@ -88,6 +89,14 @@ exports.handler = function(event, context, callback) {
 */                    
                 }
             })
+
+            // Reduce
+            allImuData[0].gyrx = ramerdouglas.rdp(allImuData[0].gyrx, 0.600)
+            allImuData[0].gyry = ramerdouglas.rdp(allImuData[0].gyry, 0.600)
+            allImuData[0].gyrz = ramerdouglas.rdp(allImuData[0].gyrz, 0.600)
+            allImuData[0].accx = ramerdouglas.rdp(allImuData[0].accx, 0.600)
+            allImuData[0].accy = ramerdouglas.rdp(allImuData[0].accy, 0.600)
+            allImuData[0].accz = ramerdouglas.rdp(allImuData[0].accz, 0.600)
             
             defer.resolve(allImuData)
         })

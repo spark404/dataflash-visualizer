@@ -13,7 +13,7 @@ exports.handler = function(event, context, callback) {
 		var params = {
 	    	TableName : "dataflashlogheaders",
 	    	Key: {
-	    		filename: event.reportid
+	    		filename: event.pathParameters.reportid
 	    	}
 		};
 

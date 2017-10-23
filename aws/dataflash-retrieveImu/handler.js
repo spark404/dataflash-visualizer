@@ -7,7 +7,7 @@ exports.handler = function(event, context, callback) {
 	const util = require('util')
 	const dataflashlog = require('dataflashlog')
 	const s3 = new AWS.S3({ apiVersion: '2006-03-01' });
-    const ramerdouglas = require('./RamerDouglasPeuker.js')
+    const ramerdouglas = require('./RamerDouglasPeucker.js')
 
     function getS3Object(bucket, key) {
         console.log("Entering getS3Object with bucket=" + bucket + " and key=" + key)

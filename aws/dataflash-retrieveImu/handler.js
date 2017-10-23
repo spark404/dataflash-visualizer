@@ -1,12 +1,12 @@
 'use strict';
 
 exports.handler = function(event, context, callback) {
-	const AWS = require("aws-sdk");
-	const Q = require('kew');
-	const docClient = new AWS.DynamoDB.DocumentClient();
-	const util = require('util')
-	const dataflashlog = require('dataflashlog')
-	const s3 = new AWS.S3({ apiVersion: '2006-03-01' });
+    const AWS = require("aws-sdk");
+    const Q = require('kew');
+    const docClient = new AWS.DynamoDB.DocumentClient();
+    const util = require('util')
+    const dataflashlog = require('dataflashlog')
+    const s3 = new AWS.S3({ apiVersion: '2006-03-01' });
     const ramerdouglas = require('./RamerDouglasPeucker.js')
 
     function getS3Object(bucket, key) {
@@ -57,7 +57,7 @@ exports.handler = function(event, context, callback) {
 
             var rowcount = 0
             data.messages.forEach(function(event) {
-            	switch(event.name) {
+                switch(event.name) {
                 case "IMU":
                     allImuData[0].gyrx.push([allImuData[0].rowcount, event.GyrX.toFixed(3)])
                     allImuData[0].gyry.push([allImuData[0].rowcount, event.GyrY.toFixed(3)])
@@ -66,8 +66,8 @@ exports.handler = function(event, context, callback) {
                     allImuData[0].accy.push([allImuData[0].rowcount, event.AccY.toFixed(3)])
                     allImuData[0].accz.push([allImuData[0].rowcount, event.AccZ.toFixed(3)])
                     allImuData[0].rowcount = allImuData[0].rowcount + 1
-                	break;
-/*                	
+                    break;
+/*                  
                 case "IMU2":
                     allImuData[1].gyrx.push([allImuData[1].rowcount, event.GyrX])
                     allImuData[1].gyry.push([allImuData[1].rowcount, event.GyrY])
@@ -105,31 +105,45 @@ exports.handler = function(event, context, callback) {
         return defer.promise
     }
 
-	function response(data, statuscode) {
-	    console.log("Entering response")
-	    
-	    if (data === undefined) {
-	        var errorMessage = {}
-	        errorMessage.message = "No entry found in database"
-	    
-    	    const response = {
-        		statusCode: 404,
-    		    body: JSON.stringify(errorMessage),
-    		  };
-    		
-    		callback(null, response)
-	    } else {
-    	    const response = {
-        		statusCode: statuscode,
-	    		headers: {
-        		    "Access-Control-Allow-Origin": "*"
-        		},
-    		    body: JSON.stringify(data),
-    		  };
-    		
-    		callback(null, response)
-	    }
-	}
+    function response(data, statuscode) {
+        console.log("Entering response with statuscode " + statuscode)
+        
+        if (statuscode === 500) {
+            console.log(data)
+            var errorMessage = {}
+            errorMessage.message = data
+            const response = {
+                statusCode: statuscode,
+                headers: {
+                    "Access-Control-Allow-Origin": "*"
+                },
+                body: JSON.stringify(data),
+            };
+            callback(null, response)
+        }
+
+        if (data === undefined) {
+            errorMessage = {}
+            errorMessage.message = "No entry found in database"
+        
+            const response = {
+                statusCode: 404,
+                body: JSON.stringify(errorMessage),
+              };
+            
+            callback(null, response)
+        } else {
+            const response = {
+                statusCode: statuscode,
+                headers: {
+                    "Access-Control-Allow-Origin": "*"
+                },
+                body: JSON.stringify(data),
+              };
+            
+            callback(null, response)
+        }
+    }
 
     function reduce(points) {
         var origPoints = points.length
@@ -141,8 +155,8 @@ exports.handler = function(event, context, callback) {
     console.log("*** MAIN ***")
     console.log("event: " + util.inspect(event))
     console.log("context: " + util.inspect(context))
-	getS3Object("dataflashlogs", event.pathParameters.reportid)
-		.then(data => parseDatafile(event.pathParameters.reportid, data))
-		.then(data => response(data, 200))
-		.fail(err => response(err, 500))
+    getS3Object("dataflashlogs", event.pathParameters.reportid)
+        .then(data => parseDatafile(event.pathParameters.reportid, data))
+        .then(data => response(data, 200))
+        .fail(err => response(err, 500))
 }

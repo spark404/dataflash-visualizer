@@ -35,8 +35,8 @@ function rdp(points, epsilon) {
 
 	var resultArray
 	if (dmax > epsilon) {
-		var left = RDP(points.slice(0, index +  1), epsilon)
-		var right = RDP(points.slice(index, end + 1), epsilon)
+		var left = rdp(points.slice(0, index +  1), epsilon)
+		var right = rdp(points.slice(index, end + 1), epsilon)
 		resultArray = left.slice(0, left.length -1).concat(right)
 	} else {
 		// We can reduce, so just return first and last point of this sequence

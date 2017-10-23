@@ -91,12 +91,12 @@ exports.handler = function(event, context, callback) {
             })
 
             // Reduce
-            allImuData[0].gyrx = ramerdouglas.rdp(allImuData[0].gyrx, 0.600)
-            allImuData[0].gyry = ramerdouglas.rdp(allImuData[0].gyry, 0.600)
-            allImuData[0].gyrz = ramerdouglas.rdp(allImuData[0].gyrz, 0.600)
-            allImuData[0].accx = ramerdouglas.rdp(allImuData[0].accx, 0.600)
-            allImuData[0].accy = ramerdouglas.rdp(allImuData[0].accy, 0.600)
-            allImuData[0].accz = ramerdouglas.rdp(allImuData[0].accz, 0.600)
+            allImuData[0].gyrx = reduce(allImuData[0].gyrx)
+            allImuData[0].gyry = reduce(allImuData[0].gyry)
+            allImuData[0].gyrz = reduce(allImuData[0].gyrz)
+            allImuData[0].accx = reduce(allImuData[0].accx)
+            allImuData[0].accy = reduce(allImuData[0].accy)
+            allImuData[0].accz = reduce(allImuData[0].accz)
             
             defer.resolve(allImuData)
         })
@@ -129,7 +129,14 @@ exports.handler = function(event, context, callback) {
     		
     		callback(null, response)
 	    }
-	} 
+	}
+
+    function reduce(points) {
+        var origPoints = points.length
+        var result = ramerdouglas.rdp(points, 0.600)
+        var resultPoints = result.length
+        console.log("Reduced the points from " + origPoints + " to " + resultPoints)
+    } 
 
     console.log("*** MAIN ***")
     console.log("event: " + util.inspect(event))

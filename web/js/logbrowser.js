@@ -678,7 +678,6 @@ function displayImuPanel(data) {
     $('#datapanels .card-body')
         .empty()
         .addClass('card-columns')
-        .append(createGraphCard('vibration-graph', 'Vibration'))
 
     var options = {
         series: {
@@ -726,17 +725,28 @@ function displayImuPanel(data) {
 
     };
 
-    var graphData = [{
-        data: data[0].accx,
-        label: "AccX"
-    }, {
-        data: data[0].accy,
-        label: "AccY"
-    }, {
-        data: data[0].accx,
-        label: "AccZ"
-    }]
-    $.plot($('#datapanels .card-body #vibration-graph'), graphData, options)
+    for (var i = 0; i< 3 ; i++) {
+        if (data[i].rowcount == 0) {
+            continue
+        }
+
+        var graphData = [{
+            data: data[i].accx,
+            label: "AccX"
+        }, {
+            data: data[i].accy,
+            label: "AccY"
+        }, {
+            data: data[i].accx,
+            label: "AccZ"
+        }]
+
+        $('#datapanels .card-columns')
+            .append(createGraphCard('vibration-graph' + i, 'Vibration#' + i ))
+
+        $.plot($('#datapanels .card-body #vibration-graph' + i), graphData, options)
+    }
+
 }
 
 function createGraphCard(graphId, title) {

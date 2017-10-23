@@ -67,37 +67,39 @@ exports.handler = function(event, context, callback) {
                     allImuData[0].accz.push([allImuData[0].rowcount, event.AccZ.toFixed(3)])
                     allImuData[0].rowcount = allImuData[0].rowcount + 1
                     break;
-/*                  
                 case "IMU2":
-                    allImuData[1].gyrx.push([allImuData[1].rowcount, event.GyrX])
-                    allImuData[1].gyry.push([allImuData[1].rowcount, event.GyrY])
-                    allImuData[1].gyrz.push([allImuData[1].rowcount, event.GyrZ])
-                    allImuData[1].accx.push([allImuData[1].rowcount, event.AccX])
-                    allImuData[1].accy.push([allImuData[1].rowcount, event.AccY])
-                    allImuData[1].accz.push([allImuData[1].rowcount, event.AccZ])
+                    allImuData[1].gyrx.push([allImuData[1].rowcount, event.GyrX.toFixed(3)])
+                    allImuData[1].gyry.push([allImuData[1].rowcount, event.GyrY.toFixed(3)])
+                    allImuData[1].gyrz.push([allImuData[1].rowcount, event.GyrZ.toFixed(3)])
+                    allImuData[1].accx.push([allImuData[1].rowcount, event.AccX.toFixed(3)])
+                    allImuData[1].accy.push([allImuData[1].rowcount, event.AccY.toFixed(3)])
+                    allImuData[1].accz.push([allImuData[1].rowcount, event.AccZ.toFixed(3)])
                     allImuData[1].rowcount = allImuData[1].rowcount + 1
                     break;
                 case "IMU3":
-                    allImuData[2].gyrx.push([allImuData[2].rowcount, event.GyrX])
-                    allImuData[2].gyry.push([allImuData[2].rowcount, event.GyrY])
-                    allImuData[2].gyrz.push([allImuData[2].rowcount, event.GyrZ])
-                    allImuData[2].accx.push([allImuData[2].rowcount, event.AccX])
-                    allImuData[2].accy.push([allImuData[2].rowcount, event.AccY])
-                    allImuData[2].accz.push([allImuData[2].rowcount, event.AccZ])
+                    allImuData[2].gyrx.push([allImuData[2].rowcount, event.GyrX.toFixed(3)])
+                    allImuData[2].gyry.push([allImuData[2].rowcount, event.GyrY.toFixed(3)])
+                    allImuData[2].gyrz.push([allImuData[2].rowcount, event.GyrZ.toFixed(3)])
+                    allImuData[2].accx.push([allImuData[2].rowcount, event.AccX.toFixed(3)])
+                    allImuData[2].accy.push([allImuData[2].rowcount, event.AccY.toFixed(3)])
+                    allImuData[2].accz.push([allImuData[2].rowcount, event.AccZ.toFixed(3)])
                     allImuData[2].rowcount = allImuData[2].rowcount + 1
                     break;
-*/                    
                 }
             })
 
             // Reduce
-            allImuData[0].gyrx = reduce(allImuData[0].gyrx)
-            allImuData[0].gyry = reduce(allImuData[0].gyry)
-            allImuData[0].gyrz = reduce(allImuData[0].gyrz)
-            allImuData[0].accx = reduce(allImuData[0].accx)
-            allImuData[0].accy = reduce(allImuData[0].accy)
-            allImuData[0].accz = reduce(allImuData[0].accz)
-            
+            for (i = 0; i < 3; i++) {
+                if (allImuData[i].rowcount > 0) {
+                    allImuData[i].gyrx = reduce(allImuData[i].gyrx)
+                    allImuData[i].gyry = reduce(allImuData[i].gyry)
+                    allImuData[i].gyrz = reduce(allImuData[i].gyrz)
+                    allImuData[i].accx = reduce(allImuData[i].accx)
+                    allImuData[i].accy = reduce(allImuData[i].accy)
+                    allImuData[i].accz = reduce(allImuData[i].accz)
+                }
+            }
+
             defer.resolve(allImuData)
         })
 
@@ -147,9 +149,10 @@ exports.handler = function(event, context, callback) {
 
     function reduce(points) {
         var origPoints = points.length
-        var result = ramerdouglas.rdp(points, 0.600)
+        var result = ramerdouglas.rdp(points, 0.400)
         var resultPoints = result.length
         console.log("Reduced the points from " + origPoints + " to " + resultPoints)
+        return result
     } 
 
     console.log("*** MAIN ***")

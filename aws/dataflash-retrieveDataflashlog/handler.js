@@ -39,13 +39,27 @@ exports.handler = function(event, context, callback) {
     function response(data, statuscode) {
         console.log("Entering response");
 
-        const response = {
-            statusCode: statuscode,
-            body: JSON.stringify(data)
+        if (data === undefined) {
+            var errorMessage = {};
+            errorMessage.message = "No entry found in database";
 
-        };
+            const response = {
+                statusCode: 404,
+                body: JSON.stringify(errorMessage)
+            };
 
-        callback(null, response);
+            callback(null, response);
+        } else {
+            const response = {
+                statusCode: statuscode,
+                headers: {
+                    "Access-Control-Allow-Origin": "*"
+                },
+                body: JSON.stringify(data)
+            };
+
+            callback(null, response);
+        }
     }
 
     console.log("*** MAIN ***");

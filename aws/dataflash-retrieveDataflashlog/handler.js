@@ -29,7 +29,7 @@ exports.handler = function(event, context, callback) {
             if (err) {
                 defer.reject(err);
             } else {
-                defer.resolve(data);
+                defer.resolve(data.Item);
             }
         });
 

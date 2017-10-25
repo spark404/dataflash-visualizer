@@ -117,7 +117,7 @@ deploy:
     region: "eu-west-2"
     role: "arn:aws:iam::199710627848:role/dataflashvisualizer-lambda-dataprocessor"
     runtime: "nodejs6.10"
-    module_name: "index"
+    module_name: "handler"
     handler_name: "handler"
     description: "Triggers on new item in dynamodb and updates the metadata for a new log"
     timeout: 300

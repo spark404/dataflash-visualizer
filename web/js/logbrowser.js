@@ -4,8 +4,8 @@ var flightLogs = {};
 // Global reference to the reports cache
 var reports = {};
 
-// Global reference to the map and the flightpath
-var map, flightPath;
+// Global references to currently visisble log;
+var map, flightPath, details;
 
 // Pages
 function showIndexPage() {
@@ -263,6 +263,7 @@ function detailView(filename) {
     console.log("Requested a detailview of " + filename);
 
     reports = {};
+    details = undefined;
 
     $('#browser').addClass("hidden");
     $('#visualizer').removeClass("hidden");
@@ -305,16 +306,17 @@ function detailView(filename) {
     console.log("Configuring panels for " + filename);
     $("#datapanels").find(".card-header ul")
         .empty()
-        .append(createCard('Parameters', false, filename)) // TODO
+        .append(createCard('Messages', true, filename))
+        .append(createCard('Parameters', true, filename))
         .append(createCard('Power', itemData.power, filename))
         .append(createCard('Altitude', false, filename)) // TODO
         .append(createCard('Attitude', itemData.attitude, filename))
         .append(createCard('GPS', itemData.gps, filename))
         .append(createCard('IMU', itemData.imu, filename))
-        .append(createCard('NTUN', false, filename)) // TODO
-        .append(createCard('Errors', true, filename));
+        .append(createCard('NTUN', false, filename)); // TODO
 
-    activatePanel('Errors', filename)
+
+    activatePanel('Messages', filename)
 
 }
 
@@ -363,9 +365,9 @@ function activatePanel(panelName, filename) {
      		dataSource: 'power',
      		callback: displayPowerPanel
      	},
-     	'Errors' : {
+     	'Messages' : {
      		dataSource: 'errors',
-     		callback: displayErrorPanel
+     		callback: displayMessagesPanel
      	},
      	'GPS' : {
      		dataSource: 'gpspath',
@@ -378,13 +380,25 @@ function activatePanel(panelName, filename) {
      	'IMU' : {
      		dataSource: 'imu',
      		callback: displayImuPanel
-     	}
+     	},
+         'Parameters' : {
+             dataSource: 'details',
+             callback: displayParametersPanel
+         }
      };
 
     var panelToShow = panels[panelName];
-        loadData(filename, panelToShow.dataSource)
+    if (panelName === "Messages") {
+        dataPromise = loadData(filename, panelToShow.dataSource);
+        detailsPromise = get('https://dataflashapi.strocamp.net/reports/' + filename);
+        Promise.all([dataPromise, detailsPromise])
             .then(panelToShow.callback)
             .catch(displayLoadFailed)
+    } else {
+        dataPromise = loadData(filename, panelToShow.dataSource)
+            .then(panelToShow.callback)
+            .catch(displayLoadFailed)
+    }
 }
 
 function displayLoadFailed(err) {
@@ -397,12 +411,19 @@ function displayLoadFailed(err) {
             .text('Failed to load data: ' + err))	
 }
 
-function displayErrorPanel(errorlist) {
+function displayMessagesPanel(displayData) {
     var dataPanels = $('#datapanels');
 
-    dataPanels.find('.card-body')
-    .empty();
-    if (errorlist.length === 0) {
+    reports["details"] = displayData[1]; // TODO should not be stored here
+
+    var errorList = displayData[0];
+    var messages = displayData[1].messages;
+
+    dataPanels
+        .find('.card-body')
+        .empty();
+
+    if ((errorList === undefined || errorList.length === 0) && (messages === undefined || messages.length === 0)) {
         dataPanels.find('.card-body')
             .empty()
             .append($('<div>')
@@ -411,15 +432,65 @@ function displayErrorPanel(errorlist) {
                 .attr('role', 'alert')
                 .text('No errors!'))
     } else {
-        errorlist.forEach(function(errorMessage) {
+        errorList.forEach(function(errorMessage) {
             dataPanels.find('.card-body')
                 .append($('<div>')
                     .addClass('alert')
                     .addClass('alert-danger')
                     .attr('role', 'alert')
                     .text("Subsystem " + errorMessage.subsys + " Errorcode : " + errorMessage.ecode))
-        })
+        });
+
+        messages.forEach((function(message) {
+            var messageDate = new Date(message.timestamp);
+            var timestamp = messageDate.toLocaleDateString() + " " + messageDate.toLocaleTimeString();
+
+            dataPanels.find(".card-body")
+                .append($("<div>")
+                    .addClass('alert')
+                    .addClass('alert-info')
+                    .addClass('text-left')
+                    .attr('role','alert')
+                    .text(timestamp + " " + message.text)
+                )
+        }));
     }
+}
+
+function displayParametersPanel(displayData) {
+    var dataPanels = $('#datapanels');
+
+    dataPanels
+        .find('.card-body')
+        .empty();
+
+    dataPanels.find(".card-body")
+        .append($("<table>")
+            .append($("<thead>")
+                .append($("<tr>")
+                    .append($("<th>")
+                        .text("Parameter")
+                    )
+                    .append($("<th>")
+                        .text("Value")
+                    )
+                )
+            )
+        )
+
+    Object.keys(displayData.parameters).sort().forEach(function(key) {
+        dataPanels.find(".card-body thead")
+            .append($("<tr>")
+                .append($("<td>")
+                    .addClass("text-left")
+                    .text(key)
+                )
+                .append($("<td>")
+                    .addClass("text-left")
+                    .text(displayData.parameters[key])
+                )
+            )
+    })
 }
 
 function displayPowerPanel(data) {

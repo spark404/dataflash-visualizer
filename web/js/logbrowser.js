@@ -1,7 +1,7 @@
-/* Request the logs from the lambda
- */
 // Global reference to the available flightlogs
 var flightLogs = {};
+
+// Global reference to the reports cache
 var reports = {};
 
 // Global reference to the map and the flightpath
@@ -9,68 +9,68 @@ var map, flightPath;
 
 // Pages
 function showIndexPage() {
-    console.log("Showing index page")
+    console.log("Showing index page");
     $('#upload')
-        .addClass("hidden")
+        .addClass("hidden");
     $('#browser')
-        .addClass("hidden")    
+        .addClass("hidden");
     $('#visualizer')
-        .addClass("hidden")
+        .addClass("hidden");
 
     $('div.jumbotron')
-        .removeClass('hidden')
+        .removeClass('hidden');
     $('#mainpage')
-        .removeClass('hidden')
+        .removeClass('hidden');
 
     $('a.nav-link.active')
-        .removeClass('active')
+        .removeClass('active');
 
     $('a.nav-link:contains("Home")')
         .addClass('active')
 }
 
 function showUploadPage() {
-    console.log("Showing upload page")
+    console.log("Showing upload page");
     $('#browser')
-        .addClass("hidden")    
+        .addClass("hidden");
     $('#visualizer')
-        .addClass("hidden")
+        .addClass("hidden");
     $('div.jumbotron')
-        .addClass('hidden')
+        .addClass('hidden');
     $('#mainpage')
-        .addClass('hidden')
+        .addClass('hidden');
 
     $('#upload')
-        .removeClass("hidden")
+        .removeClass("hidden");
 
     $('a.nav-link.active')
-        .removeClass('active')
+        .removeClass('active');
 
     $('a.nav-link:contains("Upload")')
         .addClass('active')
 }
 
 function showBrowserPage() {
-    console.log("Showing browser page")
+    console.log("Showing browser page");
     $('#visualizer')
-        .addClass("hidden")
+        .addClass("hidden");
     $('div.jumbotron')
-        .addClass('hidden')
+        .addClass('hidden');
     $('#mainpage')
-        .addClass('hidden')
+        .addClass('hidden');
     $('#upload')
-        .addClass("hidden")
+        .addClass("hidden");
 
     $('#browser')
-        .removeClass("hidden")
+        .removeClass("hidden");
 
     $('a.nav-link.active')
-        .removeClass('active')
+        .removeClass('active');
 
     $('a.nav-link:contains("View")')
-        .addClass('active')
+        .addClass('active');
 
-    $('#logtable tbody')
+    $('#logtable').find('tbody')
         .empty()
         .append($('<tbody>')
             .append($('<tr>')
@@ -82,7 +82,7 @@ function showBrowserPage() {
                         .addClass('fa-spin')
                         .addClass('fa-2x')
                         .addClass('fa-fw'))
-                        .append(" Loading..."))))
+                        .append(" Loading..."))));
 
     get("https://dataflashapi.strocamp.net/reports")
         .then(browseCallback)
@@ -92,14 +92,14 @@ function showBrowserPage() {
 function get(url) {
     return new Promise(function(resolve, reject) {
         $.ajax(url)
-            .then(function(response, statusText, xhrObj) {
-                if (statusText == "success") {
+            .then(function(response, statusText) {
+                if (statusText === "success") {
                     resolve(response);
                 } else {
                     reject(Error(statusText));
                 }
             }, function(xhrObj, textStatus, err) {
-                reject(Error("Network Error"));
+                reject(Error("Network Error: " + err));
             })
     })
 }
@@ -107,18 +107,18 @@ function get(url) {
 function loadData(filename, dataSource) {
     return new Promise(function(resolve, reject) {
         if (reports.hasOwnProperty(dataSource) && !(reports[dataSource] === undefined)) {
-            console.log("CACHE HIT: datasource:" + dataSource + ", filename:" + filename)
+            console.log("CACHE HIT: datasource:" + dataSource + ", filename:" + filename);
             resolve(reports[dataSource])
         } else {
-            console.log("CACHE MISS: datasource:" + dataSource + ", filename:" + filename)
+            console.log("CACHE MISS: datasource:" + dataSource + ", filename:" + filename);
             get('https://dataflashapi.strocamp.net/reports/' + filename + '/' + dataSource)
                 .then(function(data) {
-                    console.log("URL LOAD COMPLETED: datasource:" + dataSource + ", filename:" + filename)
-                    reports[dataSource] = data
+                    console.log("URL LOAD COMPLETED: datasource:" + dataSource + ", filename:" + filename);
+                    reports[dataSource] = data;
                     resolve(data)
                 })
                 .catch(function(err) {
-                    console.log("URL LOAD FAILED: datasource:" + dataSource + ", filename:" + filename)
+                    console.log("URL LOAD FAILED: datasource:" + dataSource + ", filename:" + filename);
                     reject(err)
                 })
         }
@@ -139,12 +139,11 @@ function formatThousandsWithRounding(n, dp) {
         r = '.' + s.substr(i, 3) + r;
     }
     return s.substr(0, i + 3) + r + (d ? ',' + d : '');
-};
-
+}
 function browseCallback(data) {
-    flightLogs = {}
+    flightLogs = {};
 
-    $('#logtable tbody').empty();
+    $('#logtable').find('tbody').empty();
 
     var sortedData = data.sort(function(a, b) {
         if (a.timestamps.start < b.timestamps.start) {
@@ -154,14 +153,14 @@ function browseCallback(data) {
         } else {
             return 0
         }
-    })
+    });
 
     sortedData.forEach(function(item) {
         // Add to global
         flightLogs[item.filename] = item;
-        var startDate = new Date(item.timestamps.start)
+        var startDate = new Date(item.timestamps.start);
 
-        $('#logtable tbody')
+        $('#logtable').find('tbody')
             .append($('<tr>')
                 .append($('<td>')
                     .append($('<p>')
@@ -239,9 +238,9 @@ function browseCallback(data) {
     })
 }
 
-function browseFailed(err) {
-    var logtable = $("#logtable")
-    $('#logtable tbody').remove();
+function browseFailed() {
+    var logtable = $("#logtable");
+    logtable.find('tbody').remove();
     logtable
         .append($('<tr>')
             .append($('<td>')
@@ -261,19 +260,19 @@ function browseFailed(err) {
 }
 
 function detailView(filename) {
-    console.log("Requested a detailview of " + filename)
+    console.log("Requested a detailview of " + filename);
 
-    reports = {}
+    reports = {};
 
-    $('#browser').addClass("hidden")
-    $('#visualizer').removeClass("hidden")
+    $('#browser').addClass("hidden");
+    $('#visualizer').removeClass("hidden");
 
-    $('.breadcrumb a').on('click', browseView)
-    $('.breadcrumb span').text(filename)
+    $('.breadcrumb a').on('click', browseView);
+    $('.breadcrumb span').text(filename);
 
-    conditionalLoadMapsApi()
+    conditionalLoadMapsApi();
 
-    console.log("Requesting gpspath for " + filename)
+    console.log("Requesting gpspath for " + filename);
     loadData(filename, "gpspath").then(function(gpspath) {
         reports['gpspath'] = gpspath;
 
@@ -291,20 +290,20 @@ function detailView(filename) {
         });
 
         gpspath.forEach(function(gpspoint) {
-            var point = new google.maps.LatLng(gpspoint.lat, gpspoint.lng)
+            var point = new google.maps.LatLng(gpspoint.lat, gpspoint.lng);
             flightPath.getPath().push(point)
-        })
+        });
 
-        map.fitBounds(flightPath.getBounds())
+        map.fitBounds(flightPath.getBounds());
         console.log("Finished loading gpspath for " + filename)
     }).catch(function(err) {
         // TODO show a failed overlay on the map
         console.log("Failed to load map : " + err)
-    })
+    });
 
-    itemData = flightLogs[filename]
-    console.log("Configuring panels for " + filename)
-    $("#datapanels .card-header ul")
+    var itemData = flightLogs[filename];
+    console.log("Configuring panels for " + filename);
+    $("#datapanels").find(".card-header ul")
         .empty()
         .append(createCard('Parameters', false, filename)) // TODO
         .append(createCard('Power', itemData.power, filename))
@@ -313,7 +312,7 @@ function detailView(filename) {
         .append(createCard('GPS', itemData.gps, filename))
         .append(createCard('IMU', itemData.imu, filename))
         .append(createCard('NTUN', false, filename)) // TODO
-        .append(createCard('Errors', true, filename))
+        .append(createCard('Errors', true, filename));
 
     activatePanel('Errors', filename)
 
@@ -326,15 +325,15 @@ function createCard(title, enabled, filename) {
             .addClass("nav-link")
             .attr("href", "#")
             .text(title)
-        )
-    var navlink = navitem.find("a")
+        );
+    var navlink = navitem.find("a");
     if (enabled) {
         navlink.on('click', function(event) {
-            event.preventDefault()
+            event.preventDefault();
             activatePanel(title, filename)
         })
     } else {
-        navlink.addClass("disabled")
+        navlink.addClass("disabled");
         navlink.on('click', function(event) {
             event.preventDefault()
         })
@@ -343,19 +342,21 @@ function createCard(title, enabled, filename) {
 }
 
 function activatePanel(panelName, filename) {
-    $("#datapanels a.active")
-        .removeClass("active")
+    var datapanels = $("#datapanels");
+
+    datapanels.find("a.active")
+        .removeClass("active");
     
-    $("#datapanels a:contains('" + panelName + "')")
-        .addClass("active")
-    
-    $('#datapanels .card-body')
+    datapanels.find("a:contains('" + panelName + "')")
+        .addClass("active");
+
+    datapanels.find('.card-body')
         .empty()
         .append($('<div>')
             .addClass('alert')
             .addClass('alert-info')
             .attr('role', 'alert')
-            .text('Loading...'))
+            .text('Loading...'));
      
      var panels = {
      	'Power' : {
@@ -378,16 +379,16 @@ function activatePanel(panelName, filename) {
      		dataSource: 'imu',
      		callback: displayImuPanel
      	}
-     }
+     };
 
-    var panelToShow = panels[panelName]
+    var panelToShow = panels[panelName];
         loadData(filename, panelToShow.dataSource)
             .then(panelToShow.callback)
             .catch(displayLoadFailed)
 }
 
 function displayLoadFailed(err) {
-    $('#datapanels .card-body')
+    $('#datapanels').find('.card-body')
         .empty()
         .append($('<div>')
             .addClass('alert')
@@ -397,10 +398,12 @@ function displayLoadFailed(err) {
 }
 
 function displayErrorPanel(errorlist) {
-    $('#datapanels .card-body')
-    .empty()
+    var dataPanels = $('#datapanels');
+
+    dataPanels.find('.card-body')
+    .empty();
     if (errorlist.length === 0) {
-        $('#datapanels .card-body')
+        dataPanels.find('.card-body')
             .empty()
             .append($('<div>')
                 .addClass('alert')
@@ -409,7 +412,7 @@ function displayErrorPanel(errorlist) {
                 .text('No errors!'))
     } else {
         errorlist.forEach(function(errorMessage) {
-            $('#datapanels .card-body')
+            dataPanels.find('.card-body')
                 .append($('<div>')
                     .addClass('alert')
                     .addClass('alert-danger')
@@ -420,22 +423,23 @@ function displayErrorPanel(errorlist) {
 }
 
 function displayPowerPanel(data) {
-    $('#datapanels .card-body')
+    var datapanels = $('#datapanels');
+    datapanels.find('.card-body')
         .empty()
         .append($('<div>')
             .addClass('card-columns')
             .append(createGraphCard('power-graph', 'Power drain (mA)'))
             .append(createGraphCard('voltage-graph', 'Voltage (volt)'))
-            .append(createGraphCard('totalpower-graph', 'Cumulative Power Usage (mAh)')))
+            .append(createGraphCard('totalpower-graph', 'Cumulative Power Usage (mAh)')));
 
-    var volts = []
-    var curr = []
-    var currtot = []
+    var volts = [];
+    var curr = [];
+    var currtot = [];
     data.forEach(function(line) {
-        volts.push([line.timestamp, line.volt])
-        curr.push([line.timestamp, line.curr])
+        volts.push([line.timestamp, line.volt]);
+        curr.push([line.timestamp, line.curr]);
         currtot.push([line.timestamp, line.currtot])
-    })
+    });
 
     var options = {
         series: {
@@ -460,31 +464,31 @@ function displayPowerPanel(data) {
     };
 
 
-    $.plot($('#datapanels .card-body #voltage-graph'), [volts], options)
-    $.plot($('#datapanels .card-body #power-graph'), [curr], options)
-    $.plot($('#datapanels .card-body #totalpower-graph'), [currtot], options)
+    $.plot(datapanels.find('.card-body #voltage-graph'), [volts], options);
+    $.plot(datapanels.find('.card-body #power-graph'), [curr], options);
+    $.plot(datapanels.find('.card-body #totalpower-graph'), [currtot], options)
 }
 
 function displayGpsPanel(data) {
-    $('#datapanels .card-body')
+    var datapanels = $('#datapanels');
+    datapanels.find('.card-body')
         .empty()
         .addClass('card-columns')
         .append(createGraphCard('hdop-graph', 'Horizontal Dilution of Precision'))
-        .append(createGraphCard('alt-graph', 'Altitude / Speed'))
+        .append(createGraphCard('alt-graph', 'Altitude / Speed'));
 
-    var hdop = []
-    var alt = []
-    var spd = []
-    var modeChanges
+    var hdop = [];
+    var alt = [];
+    var spd = [];
     var index = 0;
+    var modeChanges = [];
 
     data.forEach(function(line) {
-        hdop.push([index, line.hdop])
-        alt.push([index, line.alt])
-        spd.push([index, line.spd])
+        hdop.push([index, line.hdop]);
+        alt.push([index, line.alt]);
+        spd.push([index, line.spd]);
 
-        if (modeChanges === undefined) {
-            modeChanges = []
+        if (modeChanges.length === 0) {
             modeChanges.push([index, line.flightMode])
         } else {
             if (!(line.flightMode === modeChanges[modeChanges.length - 1][1])) {
@@ -493,7 +497,7 @@ function displayGpsPanel(data) {
         }
 
         index = index + 1
-    })
+    });
 
     var options = {
         series: {
@@ -555,21 +559,21 @@ function displayGpsPanel(data) {
                         from: 20
                     },
                     color: "#f8d7da"
-                }, // Poor
+                } // Poor
             ]
         }
     };
 
-    $.plot($('#datapanels .card-body #hdop-graph'), [hdop], options)
+    $.plot(datapanels.find('.card-body #hdop-graph'), [hdop], options);
 
-    var data = [{
+    var graphData = [{
         data: alt,
         label: "Altitude (m)"
     }, {
         data: spd,
         yaxis: 2,
         label: "Speed (m/s)"
-    }]
+    }];
 
     options = {
         series: {
@@ -596,7 +600,7 @@ function displayGpsPanel(data) {
         grid: {}
     };
 
-    var markings = []
+    var markings = [];
     modeChanges.forEach(function(item, index) {
         var nextStep;
         if (!(index === modeChanges.length - 1)) {
@@ -611,19 +615,21 @@ function displayGpsPanel(data) {
             },
             color: flightModeDetailsForCode(item[1]).color
         })
-    })
-    options.grid.markings = markings
+    });
+    options.grid.markings = markings;
 
-    $.plot($('#datapanels .card-body #alt-graph'), data, options)
+    $.plot(datapanels.find('.card-body #alt-graph'), graphData, options)
 }
 
 function displayAttitudePanel(data) {
-    $('#datapanels .card-body')
+    var datapanels = $('#datapanels');
+
+    datapanels.find('.card-body')
         .empty()
         .addClass('card-columns')
         .append(createGraphCard('roll-graph', 'Roll'))
         .append(createGraphCard('pitch-graph', 'Pitch'))
-        .append(createGraphCard('yaw-graph', 'Yaw'))
+        .append(createGraphCard('yaw-graph', 'Yaw'));
 
     var options = {
         series: {
@@ -643,7 +649,7 @@ function displayAttitudePanel(data) {
         },
         yaxix: {
             show: true
-        },
+        }
     };
 
     var graphData = [{
@@ -652,32 +658,33 @@ function displayAttitudePanel(data) {
     }, {
         data: data.desroll,
         label: "Desired Roll"
-    }]
-    $.plot($('#datapanels .card-body #roll-graph'), graphData, options)
+    }];
+    $.plot(datapanels.find('.card-body #roll-graph'), graphData, options);
 
-    var graphData = [{
+    graphData = [{
         data: data.pitch,
         label: "Pitch"
     }, {
         data: data.despitch,
         label: "Desired Pitch"
-    }]
-    $.plot($('#datapanels .card-body #pitch-graph'), graphData, options)
+    }];
+    $.plot(datapanels.find('.card-body #pitch-graph'), graphData, options);
 
-    var graphData = [{
+    graphData = [{
         data: data.yaw,
         label: "Yaw"
     }, {
         data: data.desyaw,
         label: "Desired Yaw"
-    }]
-    $.plot($('#datapanels .card-body #yaw-graph'), graphData, options)
+    }];
+    $.plot(datapanels.find('.card-body #yaw-graph'), graphData, options)
 }
 
 function displayImuPanel(data) {
-    $('#datapanels .card-body')
+    var datapanels = $('#datapanels');
+    datapanels.find('.card-body')
         .empty()
-        .addClass('card-columns')
+        .addClass('card-columns');
 
     var options = {
         series: {
@@ -726,7 +733,7 @@ function displayImuPanel(data) {
     };
 
     for (var i = 0; i< 3 ; i++) {
-        if (data[i].rowcount == 0) {
+        if (data[i].rowcount === 0) {
             continue
         }
 
@@ -739,14 +746,13 @@ function displayImuPanel(data) {
         }, {
             data: data[i].accx,
             label: "AccZ"
-        }]
+        }];
 
-        $('#datapanels .card-columns')
-            .append(createGraphCard('vibration-graph' + i, 'Vibration#' + i ))
+        datapanels.find('.card-columns')
+            .append(createGraphCard('vibration-graph' + i, 'Vibration#' + i ));
 
-        $.plot($('#datapanels .card-body #vibration-graph' + i), graphData, options)
+        $.plot(datapanels.find('.card-body #vibration-graph' + i), graphData, options)
     }
-
 }
 
 function createGraphCard(graphId, title) {
@@ -764,7 +770,7 @@ function createGraphCard(graphId, title) {
 }
 
 function browseView() {
-    $('#visualizer').addClass("hidden")
+    $('#visualizer').addClass("hidden");
     if (!(flightPath === undefined)) {
         flightPath.setMap(null)
     }
@@ -773,6 +779,7 @@ function browseView() {
 }
 
 function conditionalLoadMapsApi() {
+    // noinspection JSJQueryEfficiency
     var len = $('script[src*="https://maps.googleapis.com"]').length;
 
     if (len === 0) {
@@ -798,13 +805,14 @@ function loadScript(scriptLocationAndName) {
     head.appendChild(script);
 }
 
+// noinspection JSUnusedGlobalSymbols
 function initMap() {
-    console.log("Calling initMap")
+    console.log("Calling initMap");
 
     // Add the getbounds functions
     google.maps.Polyline.prototype.getBounds = function() {
         var bounds = new google.maps.LatLngBounds();
-        this.getPath().forEach(function(item, index) {
+        this.getPath().forEach(function(item) {
             bounds.extend(new google.maps.LatLng(item.lat(), item.lng()));
         });
         return bounds;
@@ -814,6 +822,7 @@ function initMap() {
         lat: 52.0278426,
         lng: 5.1630019
     };
+
     map = new google.maps.Map(document.getElementById('map-canvas'), {
         zoom: 8,
         center: hometown,
@@ -822,109 +831,109 @@ function initMap() {
 }
 
 function flightModeDetailsForCode(flightMode) {
-    var flightModes = []
+    var flightModes = [];
     flightModes[0] = {
         name: "STABILIZE",
         color: "#d4edda"
-    }
+    };
     flightModes[1] = {
         name: "ACRO",
         color: "#ffffff"
-    }
+    };
     flightModes[2] = {
         name: "ALT_HOLD",
         color: "#fff3cd"
-    }
+    };
     flightModes[3] = {
         name: "AUTO",
         color: "#cce5ff"
-    }
+    };
     flightModes[4] = {
         name: "GUIDED",
         color: "#ffffff"
-    }
+    };
     flightModes[5] = {
         name: "LOITER",
         color: "#ffffff"
-    }
+    };
     flightModes[6] = {
         name: "RTL",
         color: "#d1ecf1"
-    }
+    };
     flightModes[7] = {
         name: "CIRCLE",
         color: "#ffffff"
-    }
+    };
     flightModes[9] = {
         name: "LAND",
         color: "#ffffff"
-    }
+    };
     flightModes[11] = {
         name: "DRIFT",
         color: "#ffffff"
-    }
+    };
     flightModes[13] = {
         name: "SPORT",
         color: "#ffffff"
-    }
+    };
     flightModes[14] = {
         name: "FLIP",
         color: "#ffffff"
-    }
+    };
     flightModes[15] = {
         name: "AUTOTUNE",
         color: "#ffffff"
-    }
+    };
     flightModes[16] = {
         name: "POSHOLD",
         color: "#ffeeba"
-    }
+    };
     flightModes[17] = {
         name: "BRAKE",
         color: "#ffffff"
-    }
+    };
     flightModes[18] = {
         name: "THROW",
         color: "#ffffff"
-    }
+    };
     flightModes[19] = {
         name: "AVOID_ADSB",
         color: "#ffffff"
-    }
+    };
     flightModes[20] = {
         name: "GUIDED_NOGPS",
         color: "#ffffff"
-    }
+    };
     flightModes[21] = {
         name: "SMART_RTL",
         color: "#ffffff"
-    }
+    };
 
     return flightModes[flightMode]
 }
 
 $('a.nav-link:contains("Home")')
     .on('click', function(event) {
-        event.preventDefault()
+        event.preventDefault();
         showIndexPage()
-    })
+    });
 $('a.nav-link:contains("Upload")')
     .on('click', function(event) {
-        event.preventDefault()
+        event.preventDefault();
         showUploadPage()
-    })
+    });
 $('a.nav-link:contains("View")')
     .on('click', function(event) {
-        event.preventDefault()
+        event.preventDefault();
         showBrowserPage()
-    })
+    });
 $('a.btn:contains("Upload")')
     .on('click', function(event) {
-        event.preventDefault()
+        event.preventDefault();
         showUploadPage()
-    })
+    });
 $('a.btn:contains("View")')
     .on('click', function(event) {
-        event.preventDefault()
+        event.preventDefault();
         showBrowserPage()
-    })                            
+    });

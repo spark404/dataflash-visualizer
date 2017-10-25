@@ -10,7 +10,7 @@ exports.handler = function(event, context, callback) {
         callback(new Error("Probably not a request from the API gateway"))
     }
 
-    if (!event.pathParameters.hasOwnProperty("reportId") || event.pathParameters['reportId'] === undefined) {
+    if (!event.pathParameters.hasOwnProperty("reportid") || event.pathParameters['reportid'] === undefined) {
         response(new Error("Missing required path parameter reportId"), 409)
     }
 

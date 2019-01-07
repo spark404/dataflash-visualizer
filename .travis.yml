@@ -1,9 +1,17 @@
 language: node_js
 node_js:
 - '6'
+cache:
+  directories:
+    - node_modules
 before_script:
-- npm install -g less
-script: "./build.sh"
+  - curl -L -o sonar-scanner-cli-3.2.0.1227-linux.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.2.0.1227-linux.zip
+  - unzip sonar-scanner-cli-3.2.0.1227-linux.zip
+  - npm install -g less serverless
+script: 
+  - "(cd visualizer-backend; npm install --production; sls deploy --stage beta)"
+  - "(cd visualizer-api; npm install --production; sls deploy --stage beta)"
+  - "./sonar-scanner-3.2.0.1227-linux/bin/sonar-scanner -Dsonar.projectKey=visualizer -Dsonar.sources=visualizer-api,visualizer-backend -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=$SONARCLOUD_ORGID -Dsonar.login=$SONARCLOUD_TOKEN"
 deploy:
   - provider: s3
     access_key_id: AKIAJZMBZYLHJEGLJL5A
@@ -14,143 +22,3 @@ deploy:
     skip_cleanup: true
     acl: public_read
     local_dir: web
-  - provider: lambda
-    function_name: "dataflash-retrievePowerData"
-    region: "eu-west-2"
-    role: "arn:aws:iam::199710627848:role/dataflashvisualizer-lambda-dataprocessor"
-    runtime: "nodejs6.10"
-    module_name: "handler"
-    handler_name: "handler"
-    description: "Returns power data for a flashlog when called from the Api Gateway"
-    timeout: 20
-    memory_size: 1536
-    zip: aws/dataflash-retrievePowerData
-    access_key_id: AKIAJZMBZYLHJEGLJL5A
-    secret_access_key:
-      secure: cAX/MdNt926ZyMvwiHEiU0LBWHxiTr6O3Y/WW96iVluCmZpifOl+ZzMpTTmc6qDAQ6dPbk8MCYMl+MdESybpeTDQb/fgBh9j6DW28D+hPI1U/V23jrVx67SUPN3GyIQMxiCOfKymx2Bw1m05D34SGFr5wjhekvidajCwMc6AuUUo7WK4vFkeZSWOtqYs4/cAjhhAR11uqd48UWiI/HHrqgG0XDUES97tUJwuEEfrEAa2KJoyA34+HGQdT2gu4fqE73/lCg428qZSoqAmI/BugKI8lKXOjHg3WqDuvgkiTlpsm42551hRnQqAIXrdhPn75WUdfWWu04qy33cLSSxJLtsNGf3ZVYsVArDOk6t2os3qDV63g7HxvVwfOLLMwmb+rpbKp4OB8ku4Hrt5pzn7khT5ueADfNsLtckDkKIsqcW6nnjliT6Jc3eagCy2Bx/aXIjxJCQUisRzEowoN0aYovvxTYu7umHdiKq/eweNFh3+zOFqaT52rZlEnIXH0OSQqxIokVc9+cCUfEf+eSYRJNI+Zr3ybNM0bcj0Kf8RdnfN5nFYwYnWtBqb0MAYbf17kOoZ20VERxob/0rjWTknVjLA3kAwRXLKwp29emYVPJ6y9gXZa5PJsxCue4bQlgrn5AY6iZXz4m2OxJl9Iql41cjZZF5l/2HXxuPFV7QetVw=
-  - provider: lambda
-    function_name: "dataflash-retrieveAttitude"
-    region: "eu-west-2"
-    role: "arn:aws:iam::199710627848:role/dataflashvisualizer-lambda-dataprocessor"
-    runtime: "nodejs6.10"
-    module_name: "handler"
-    handler_name: "handler"
-    description: "Returns attitude data for a flashlog when called from the Api Gateway"
-    timeout: 20
-    memory_size: 1536
-    zip: aws/dataflash-retrieveAttitude
-    access_key_id: AKIAJZMBZYLHJEGLJL5A
-    secret_access_key:
-      secure: cAX/MdNt926ZyMvwiHEiU0LBWHxiTr6O3Y/WW96iVluCmZpifOl+ZzMpTTmc6qDAQ6dPbk8MCYMl+MdESybpeTDQb/fgBh9j6DW28D+hPI1U/V23jrVx67SUPN3GyIQMxiCOfKymx2Bw1m05D34SGFr5wjhekvidajCwMc6AuUUo7WK4vFkeZSWOtqYs4/cAjhhAR11uqd48UWiI/HHrqgG0XDUES97tUJwuEEfrEAa2KJoyA34+HGQdT2gu4fqE73/lCg428qZSoqAmI/BugKI8lKXOjHg3WqDuvgkiTlpsm42551hRnQqAIXrdhPn75WUdfWWu04qy33cLSSxJLtsNGf3ZVYsVArDOk6t2os3qDV63g7HxvVwfOLLMwmb+rpbKp4OB8ku4Hrt5pzn7khT5ueADfNsLtckDkKIsqcW6nnjliT6Jc3eagCy2Bx/aXIjxJCQUisRzEowoN0aYovvxTYu7umHdiKq/eweNFh3+zOFqaT52rZlEnIXH0OSQqxIokVc9+cCUfEf+eSYRJNI+Zr3ybNM0bcj0Kf8RdnfN5nFYwYnWtBqb0MAYbf17kOoZ20VERxob/0rjWTknVjLA3kAwRXLKwp29emYVPJ6y9gXZa5PJsxCue4bQlgrn5AY6iZXz4m2OxJl9Iql41cjZZF5l/2HXxuPFV7QetVw=
-  - provider: lambda
-    function_name: "dataflash-retrieveErrors"
-    region: "eu-west-2"
-    role: "arn:aws:iam::199710627848:role/dataflashvisualizer-lambda-dataprocessor"
-    runtime: "nodejs6.10"
-    module_name: "handler"
-    handler_name: "handler"
-    description: "Returns error data for a flashlog when called from the Api Gateway"
-    timeout: 20
-    memory_size: 1536
-    zip: aws/dataflash-retrieveErrors
-    access_key_id: AKIAJZMBZYLHJEGLJL5A
-    secret_access_key:
-      secure: cAX/MdNt926ZyMvwiHEiU0LBWHxiTr6O3Y/WW96iVluCmZpifOl+ZzMpTTmc6qDAQ6dPbk8MCYMl+MdESybpeTDQb/fgBh9j6DW28D+hPI1U/V23jrVx67SUPN3GyIQMxiCOfKymx2Bw1m05D34SGFr5wjhekvidajCwMc6AuUUo7WK4vFkeZSWOtqYs4/cAjhhAR11uqd48UWiI/HHrqgG0XDUES97tUJwuEEfrEAa2KJoyA34+HGQdT2gu4fqE73/lCg428qZSoqAmI/BugKI8lKXOjHg3WqDuvgkiTlpsm42551hRnQqAIXrdhPn75WUdfWWu04qy33cLSSxJLtsNGf3ZVYsVArDOk6t2os3qDV63g7HxvVwfOLLMwmb+rpbKp4OB8ku4Hrt5pzn7khT5ueADfNsLtckDkKIsqcW6nnjliT6Jc3eagCy2Bx/aXIjxJCQUisRzEowoN0aYovvxTYu7umHdiKq/eweNFh3+zOFqaT52rZlEnIXH0OSQqxIokVc9+cCUfEf+eSYRJNI+Zr3ybNM0bcj0Kf8RdnfN5nFYwYnWtBqb0MAYbf17kOoZ20VERxob/0rjWTknVjLA3kAwRXLKwp29emYVPJ6y9gXZa5PJsxCue4bQlgrn5AY6iZXz4m2OxJl9Iql41cjZZF5l/2HXxuPFV7QetVw=
-  - provider: lambda
-    function_name: "dataflash-retrieveImu"
-    region: "eu-west-2"
-    role: "arn:aws:iam::199710627848:role/dataflashvisualizer-lambda-dataprocessor"
-    runtime: "nodejs6.10"
-    module_name: "handler"
-    handler_name: "handler"
-    description: "Returns IMU data for a flashlog when called from the Api Gateway"
-    timeout: 20
-    memory_size: 1536
-    zip: aws/dataflash-retrieveImu
-    access_key_id: AKIAJZMBZYLHJEGLJL5A
-    secret_access_key:
-      secure: cAX/MdNt926ZyMvwiHEiU0LBWHxiTr6O3Y/WW96iVluCmZpifOl+ZzMpTTmc6qDAQ6dPbk8MCYMl+MdESybpeTDQb/fgBh9j6DW28D+hPI1U/V23jrVx67SUPN3GyIQMxiCOfKymx2Bw1m05D34SGFr5wjhekvidajCwMc6AuUUo7WK4vFkeZSWOtqYs4/cAjhhAR11uqd48UWiI/HHrqgG0XDUES97tUJwuEEfrEAa2KJoyA34+HGQdT2gu4fqE73/lCg428qZSoqAmI/BugKI8lKXOjHg3WqDuvgkiTlpsm42551hRnQqAIXrdhPn75WUdfWWu04qy33cLSSxJLtsNGf3ZVYsVArDOk6t2os3qDV63g7HxvVwfOLLMwmb+rpbKp4OB8ku4Hrt5pzn7khT5ueADfNsLtckDkKIsqcW6nnjliT6Jc3eagCy2Bx/aXIjxJCQUisRzEowoN0aYovvxTYu7umHdiKq/eweNFh3+zOFqaT52rZlEnIXH0OSQqxIokVc9+cCUfEf+eSYRJNI+Zr3ybNM0bcj0Kf8RdnfN5nFYwYnWtBqb0MAYbf17kOoZ20VERxob/0rjWTknVjLA3kAwRXLKwp29emYVPJ6y9gXZa5PJsxCue4bQlgrn5AY6iZXz4m2OxJl9Iql41cjZZF5l/2HXxuPFV7QetVw=
-  - provider: lambda
-    function_name: "dataflash-retrieveGpsPath"
-    region: "eu-west-2"
-    role: "arn:aws:iam::199710627848:role/dataflashvisualizer-lambda-dataprocessor"
-    runtime: "nodejs6.10"
-    module_name: "handler"
-    handler_name: "handler"
-    description: "Returns gps route data for a flashlog when called from the Api Gateway"
-    timeout: 20
-    memory_size: 1536
-    zip: aws/dataflash-retrieveGpsPath
-    access_key_id: AKIAJZMBZYLHJEGLJL5A
-    secret_access_key:
-      secure: cAX/MdNt926ZyMvwiHEiU0LBWHxiTr6O3Y/WW96iVluCmZpifOl+ZzMpTTmc6qDAQ6dPbk8MCYMl+MdESybpeTDQb/fgBh9j6DW28D+hPI1U/V23jrVx67SUPN3GyIQMxiCOfKymx2Bw1m05D34SGFr5wjhekvidajCwMc6AuUUo7WK4vFkeZSWOtqYs4/cAjhhAR11uqd48UWiI/HHrqgG0XDUES97tUJwuEEfrEAa2KJoyA34+HGQdT2gu4fqE73/lCg428qZSoqAmI/BugKI8lKXOjHg3WqDuvgkiTlpsm42551hRnQqAIXrdhPn75WUdfWWu04qy33cLSSxJLtsNGf3ZVYsVArDOk6t2os3qDV63g7HxvVwfOLLMwmb+rpbKp4OB8ku4Hrt5pzn7khT5ueADfNsLtckDkKIsqcW6nnjliT6Jc3eagCy2Bx/aXIjxJCQUisRzEowoN0aYovvxTYu7umHdiKq/eweNFh3+zOFqaT52rZlEnIXH0OSQqxIokVc9+cCUfEf+eSYRJNI+Zr3ybNM0bcj0Kf8RdnfN5nFYwYnWtBqb0MAYbf17kOoZ20VERxob/0rjWTknVjLA3kAwRXLKwp29emYVPJ6y9gXZa5PJsxCue4bQlgrn5AY6iZXz4m2OxJl9Iql41cjZZF5l/2HXxuPFV7QetVw=
-  - provider: lambda
-    function_name: "dataflash-retrieveDataflashlog"
-    region: "eu-west-2"
-    role: "arn:aws:iam::199710627848:role/dataflashvisualizer-lambda-dataprocessor"
-    runtime: "nodejs6.10"
-    module_name: "handler"
-    handler_name: "handler"
-    description: "Returns metadata data from dynamodb for a flashlog when called from the Api Gateway"
-    timeout: 10
-    memory_size: 1536
-    zip: aws/dataflash-retrieveDataflashlog
-    access_key_id: AKIAJZMBZYLHJEGLJL5A
-    secret_access_key:
-      secure: cAX/MdNt926ZyMvwiHEiU0LBWHxiTr6O3Y/WW96iVluCmZpifOl+ZzMpTTmc6qDAQ6dPbk8MCYMl+MdESybpeTDQb/fgBh9j6DW28D+hPI1U/V23jrVx67SUPN3GyIQMxiCOfKymx2Bw1m05D34SGFr5wjhekvidajCwMc6AuUUo7WK4vFkeZSWOtqYs4/cAjhhAR11uqd48UWiI/HHrqgG0XDUES97tUJwuEEfrEAa2KJoyA34+HGQdT2gu4fqE73/lCg428qZSoqAmI/BugKI8lKXOjHg3WqDuvgkiTlpsm42551hRnQqAIXrdhPn75WUdfWWu04qy33cLSSxJLtsNGf3ZVYsVArDOk6t2os3qDV63g7HxvVwfOLLMwmb+rpbKp4OB8ku4Hrt5pzn7khT5ueADfNsLtckDkKIsqcW6nnjliT6Jc3eagCy2Bx/aXIjxJCQUisRzEowoN0aYovvxTYu7umHdiKq/eweNFh3+zOFqaT52rZlEnIXH0OSQqxIokVc9+cCUfEf+eSYRJNI+Zr3ybNM0bcj0Kf8RdnfN5nFYwYnWtBqb0MAYbf17kOoZ20VERxob/0rjWTknVjLA3kAwRXLKwp29emYVPJ6y9gXZa5PJsxCue4bQlgrn5AY6iZXz4m2OxJl9Iql41cjZZF5l/2HXxuPFV7QetVw=
-  - provider: lambda
-    function_name: "dataflash-listDataflashlogs"
-    region: "eu-west-2"
-    role: "arn:aws:iam::199710627848:role/dataflashvisualizer-lambda-dataprocessor"
-    runtime: "nodejs6.10"
-    module_name: "handler"
-    handler_name: "handler"
-    description: "Returns all dataflash logs in dynamodb when called from the Api Gateway"
-    timeout: 10
-    memory_size: 1536
-    zip: aws/dataflash-listDataflashlogs
-    access_key_id: AKIAJZMBZYLHJEGLJL5A
-    secret_access_key:
-      secure: cAX/MdNt926ZyMvwiHEiU0LBWHxiTr6O3Y/WW96iVluCmZpifOl+ZzMpTTmc6qDAQ6dPbk8MCYMl+MdESybpeTDQb/fgBh9j6DW28D+hPI1U/V23jrVx67SUPN3GyIQMxiCOfKymx2Bw1m05D34SGFr5wjhekvidajCwMc6AuUUo7WK4vFkeZSWOtqYs4/cAjhhAR11uqd48UWiI/HHrqgG0XDUES97tUJwuEEfrEAa2KJoyA34+HGQdT2gu4fqE73/lCg428qZSoqAmI/BugKI8lKXOjHg3WqDuvgkiTlpsm42551hRnQqAIXrdhPn75WUdfWWu04qy33cLSSxJLtsNGf3ZVYsVArDOk6t2os3qDV63g7HxvVwfOLLMwmb+rpbKp4OB8ku4Hrt5pzn7khT5ueADfNsLtckDkKIsqcW6nnjliT6Jc3eagCy2Bx/aXIjxJCQUisRzEowoN0aYovvxTYu7umHdiKq/eweNFh3+zOFqaT52rZlEnIXH0OSQqxIokVc9+cCUfEf+eSYRJNI+Zr3ybNM0bcj0Kf8RdnfN5nFYwYnWtBqb0MAYbf17kOoZ20VERxob/0rjWTknVjLA3kAwRXLKwp29emYVPJ6y9gXZa5PJsxCue4bQlgrn5AY6iZXz4m2OxJl9Iql41cjZZF5l/2HXxuPFV7QetVw=
-  - provider: lambda
-    function_name: "dataflash-newitemindbtrigger"
-    region: "eu-west-2"
-    role: "arn:aws:iam::199710627848:role/dataflashvisualizer-lambda-dataprocessor"
-    runtime: "nodejs6.10"
-    module_name: "handler"
-    handler_name: "handler"
-    description: "Triggers on new item in dynamodb and updates the metadata for a new log"
-    timeout: 300
-    memory_size: 1536
-    zip: aws/dataflash-newitemindbtrigger
-    access_key_id: AKIAJZMBZYLHJEGLJL5A
-    secret_access_key:
-      secure: cAX/MdNt926ZyMvwiHEiU0LBWHxiTr6O3Y/WW96iVluCmZpifOl+ZzMpTTmc6qDAQ6dPbk8MCYMl+MdESybpeTDQb/fgBh9j6DW28D+hPI1U/V23jrVx67SUPN3GyIQMxiCOfKymx2Bw1m05D34SGFr5wjhekvidajCwMc6AuUUo7WK4vFkeZSWOtqYs4/cAjhhAR11uqd48UWiI/HHrqgG0XDUES97tUJwuEEfrEAa2KJoyA34+HGQdT2gu4fqE73/lCg428qZSoqAmI/BugKI8lKXOjHg3WqDuvgkiTlpsm42551hRnQqAIXrdhPn75WUdfWWu04qy33cLSSxJLtsNGf3ZVYsVArDOk6t2os3qDV63g7HxvVwfOLLMwmb+rpbKp4OB8ku4Hrt5pzn7khT5ueADfNsLtckDkKIsqcW6nnjliT6Jc3eagCy2Bx/aXIjxJCQUisRzEowoN0aYovvxTYu7umHdiKq/eweNFh3+zOFqaT52rZlEnIXH0OSQqxIokVc9+cCUfEf+eSYRJNI+Zr3ybNM0bcj0Kf8RdnfN5nFYwYnWtBqb0MAYbf17kOoZ20VERxob/0rjWTknVjLA3kAwRXLKwp29emYVPJ6y9gXZa5PJsxCue4bQlgrn5AY6iZXz4m2OxJl9Iql41cjZZF5l/2HXxuPFV7QetVw=
-  - provider: lambda
-    function_name: "dataflashupload-metadata-trigger"
-    region: "eu-west-2"
-    role: "arn:aws:iam::199710627848:role/service-role/dataflashupload-trigger-role"
-    runtime: "nodejs6.10"
-    module_name: "metadata"
-    handler_name: "handler"
-    description: "An Amazon S3 trigger that retrieves metadata for the object that has been updated."
-    timeout: 300
-    memory_size: 1536
-    zip: aws/dataflashupload-metadata-trigger
-    access_key_id: AKIAJZMBZYLHJEGLJL5A
-    secret_access_key:
-      secure: cAX/MdNt926ZyMvwiHEiU0LBWHxiTr6O3Y/WW96iVluCmZpifOl+ZzMpTTmc6qDAQ6dPbk8MCYMl+MdESybpeTDQb/fgBh9j6DW28D+hPI1U/V23jrVx67SUPN3GyIQMxiCOfKymx2Bw1m05D34SGFr5wjhekvidajCwMc6AuUUo7WK4vFkeZSWOtqYs4/cAjhhAR11uqd48UWiI/HHrqgG0XDUES97tUJwuEEfrEAa2KJoyA34+HGQdT2gu4fqE73/lCg428qZSoqAmI/BugKI8lKXOjHg3WqDuvgkiTlpsm42551hRnQqAIXrdhPn75WUdfWWu04qy33cLSSxJLtsNGf3ZVYsVArDOk6t2os3qDV63g7HxvVwfOLLMwmb+rpbKp4OB8ku4Hrt5pzn7khT5ueADfNsLtckDkKIsqcW6nnjliT6Jc3eagCy2Bx/aXIjxJCQUisRzEowoN0aYovvxTYu7umHdiKq/eweNFh3+zOFqaT52rZlEnIXH0OSQqxIokVc9+cCUfEf+eSYRJNI+Zr3ybNM0bcj0Kf8RdnfN5nFYwYnWtBqb0MAYbf17kOoZ20VERxob/0rjWTknVjLA3kAwRXLKwp29emYVPJ6y9gXZa5PJsxCue4bQlgrn5AY6iZXz4m2OxJl9Iql41cjZZF5l/2HXxuPFV7QetVw=
-  - provider: lambda
-    function_name: "dataflashupload-requestUploadUrl"
-    region: "eu-west-2"
-    role: "arn:aws:iam::199710627848:role/uploadurl-generator"
-    runtime: "nodejs6.10"
-    module_name: "handler"
-    handler_name: "requestUploadURL"
-    description: "Generates S3 upload url, see https://www.netlify.com/blog/2016/11/17/serverless-file-uploads/"
-    timeout: 10
-    memory_size: 1536
-    zip: aws/dataflashupload-requestUploadUrl
-    access_key_id: AKIAJZMBZYLHJEGLJL5A
-    secret_access_key:
-      secure: cAX/MdNt926ZyMvwiHEiU0LBWHxiTr6O3Y/WW96iVluCmZpifOl+ZzMpTTmc6qDAQ6dPbk8MCYMl+MdESybpeTDQb/fgBh9j6DW28D+hPI1U/V23jrVx67SUPN3GyIQMxiCOfKymx2Bw1m05D34SGFr5wjhekvidajCwMc6AuUUo7WK4vFkeZSWOtqYs4/cAjhhAR11uqd48UWiI/HHrqgG0XDUES97tUJwuEEfrEAa2KJoyA34+HGQdT2gu4fqE73/lCg428qZSoqAmI/BugKI8lKXOjHg3WqDuvgkiTlpsm42551hRnQqAIXrdhPn75WUdfWWu04qy33cLSSxJLtsNGf3ZVYsVArDOk6t2os3qDV63g7HxvVwfOLLMwmb+rpbKp4OB8ku4Hrt5pzn7khT5ueADfNsLtckDkKIsqcW6nnjliT6Jc3eagCy2Bx/aXIjxJCQUisRzEowoN0aYovvxTYu7umHdiKq/eweNFh3+zOFqaT52rZlEnIXH0OSQqxIokVc9+cCUfEf+eSYRJNI+Zr3ybNM0bcj0Kf8RdnfN5nFYwYnWtBqb0MAYbf17kOoZ20VERxob/0rjWTknVjLA3kAwRXLKwp29emYVPJ6y9gXZa5PJsxCue4bQlgrn5AY6iZXz4m2OxJl9Iql41cjZZF5l/2HXxuPFV7QetVw=

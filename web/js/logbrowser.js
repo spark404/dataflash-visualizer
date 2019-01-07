@@ -84,7 +84,7 @@ function showBrowserPage() {
                         .addClass('fa-fw'))
                         .append(" Loading..."))));
 
-    get("https://dataflashapi.strocamp.net/reports")
+    get("https://dataflashapi.strocamp.net/api/reports")
         .then(browseCallback)
         .catch(browseFailed)
 }
@@ -111,7 +111,7 @@ function loadData(filename, dataSource) {
             resolve(reports[dataSource])
         } else {
             console.log("CACHE MISS: datasource:" + dataSource + ", filename:" + filename);
-            get('https://dataflashapi.strocamp.net/reports/' + filename + '/' + dataSource)
+            get('https://dataflashapi.strocamp.net/api/reports/' + filename + '/' + dataSource)
                 .then(function(data) {
                     console.log("URL LOAD COMPLETED: datasource:" + dataSource + ", filename:" + filename);
                     reports[dataSource] = data;
@@ -390,7 +390,7 @@ function activatePanel(panelName, filename) {
     var panelToShow = panels[panelName];
     if (panelName === "Messages") {
         dataPromise = loadData(filename, panelToShow.dataSource);
-        detailsPromise = get('https://dataflashapi.strocamp.net/reports/' + filename);
+        detailsPromise = get('https://dataflashapi.strocamp.net/api/reports/' + filename);
         Promise.all([dataPromise, detailsPromise])
             .then(panelToShow.callback)
             .catch(displayLoadFailed)
@@ -856,7 +856,7 @@ function conditionalLoadMapsApi() {
     if (len === 0) {
         console.log('Loading maps API');
 
-        loadScript('https://maps.googleapis.com/maps/api/js?key=AIzaSyC-YDpdkvepF8OBG2-u80HLBksbUlFliFA&callback=initMap');
+        loadScript('https://maps.googleapis.com/maps/api/js?key=AIzaSyBXeByNQtscFzqtRiiq1Rp0yn2z9fvj2Kc&callback=initMap');
 
         if ($('script[src*="https://maps.googleapis.com"]').length === 0) {
             console.log('Maps API not loaded');

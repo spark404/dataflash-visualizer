@@ -1,0 +1,110 @@
+service: visualizer-backend
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  stage: ${opt:stage, 'dev'}
+  region: eu-west-1
+  environment:
+    BUCKET: ${self:custom.bucket}
+    DATABASE: ${self:custom.metadatatable}
+    STAGE: ${self:provider.stage}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:*
+      Resource: 
+        # NOTE you can't refer to the LogicalID of S3Bucket, otherwise
+        # there will be a circular reference in CloudFormation
+        Fn::Join: [ ":", [ arn, aws, s3, "", "", "${self:custom.bucket}/*" ]]
+    - Effect: "Allow"
+      Action: 
+      - dynamodb:*
+      Resource:
+        Fn::GetAtt:
+          - metadatatable
+          - Arn
+
+custom:
+  bucket: telemetry-log-storage-${self:provider.stage}
+  metadatatable: telemetry-metadata-${self:provider.stage}
+
+# you can add packaging information here
+#package:
+#  include:
+#    - include-me.js
+#    - include-me-dir/**
+#  exclude:
+#    - exclude-me.js
+#    - exclude-me-dir/**
+
+functions:
+  requestUploadURL:
+    handler: handler.requestUploadURL
+    events:
+      - http:
+          path: upload/url
+          method: post
+
+  requestUploadURLOptions:
+    handler: handler.requestUploadURLOptions
+    events:
+      - http:
+          path: upload/url
+          method: options
+
+  bucketTrigger:
+    handler: handler.bucketTrigger
+    events:
+      - s3: 
+          bucket: ${self:custom.bucket}
+          event: s3:ObjectCreated:*
+
+  dbTrigger:
+    handler: handler.dbTrigger
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::GetAtt:
+              - metadatatable
+              - StreamArn
+
+resources:
+  Resources:
+    metadatatable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.metadatatable}
+        AttributeDefinitions:
+          - AttributeName: filename
+            AttributeType: S
+        KeySchema:
+          - AttributeName: filename
+            KeyType: HASH
+        ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+  Outputs:
+      MetadataTable:
+        Value:
+          "Ref": metadatatable
+        Export:
+          Name: MetadataTable-${self:provider.stage}
+      MetadataTableArn:
+        Value:
+          "Fn::GetAtt": [ metadatatable, Arn ]
+        Export:
+          Name: MetadataTableArn-${self:provider.stage}
+      StorageBucket:
+        Value:
+          "Ref": S3BucketTelemetrylogstorage${self:provider.stage}
+        Export:
+          Name: StorageBucket-${self:provider.stage}
+      StorageBucketArn:
+        Value:
+          "Fn::GetAtt": [ "S3BucketTelemetrylogstorage${self:provider.stage}", Arn ]
+        Export:
+          Name: StorageBucketArn-${self:provider.stage}

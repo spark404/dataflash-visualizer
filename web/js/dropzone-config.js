@@ -26,7 +26,7 @@ function loadSignedUrl(files) {
   console.log("Requesting upload url for \"" + JSON.stringify(filedata) + "\"")
 
   $.ajax({
-    url: "https://dataflashapi.strocamp.net/uploadurl",
+    url: "https://dataflashapi.strocamp.net/backend/upload/url",
     method: "POST",
     contentType: "application/json",
     data: JSON.stringify(filedata),

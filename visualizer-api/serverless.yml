@@ -1,0 +1,81 @@
+service: visualizer-api
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  stage: ${opt:stage, 'dev'}
+  region: eu-west-1
+  environment:
+    BUCKET: ${self:custom.bucket}
+    DATABASE: ${self:custom.metadatatable}
+    STAGE: ${self:provider.stage}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:*
+      Resource: 
+        # NOTE you can't refer to the LogicalID of S3Bucket, otherwise
+        # there will be a circular reference in CloudFormation
+        'Fn::ImportValue': 'StorageBucketArn-${self:provider.stage}'
+    - Effect: "Allow"
+      Action: 
+      - dynamodb:*
+      Resource:
+        'Fn::ImportValue': 'MetadataTableArn-${self:provider.stage}'
+
+custom:
+  bucket: ${cf:visualizer-backend-${self:provider.stage}.StorageBucket}
+  metadatatable: ${cf:visualizer-backend-${self:provider.stage}.MetadataTable}
+
+# you can add packaging information here
+#package:
+#  include:
+#    - include-me.js
+#    - include-me-dir/**
+#  exclude:
+#    - exclude-me.js
+#    - exclude-me-dir/**
+
+functions:
+  listItems:
+    handler: handler.listItems
+    events:
+      - http:
+          path: reports
+          method: get
+  retrieveMetadata:
+    handler: handler.retrieveMetadata
+    events:
+      - http:
+          path: reports/{reportid}
+          method: get
+  parseAttitude:
+    handler: handler.parseAttitude
+    events:
+      - http:
+          path: reports/{reportid}/attitude
+          method: get
+  parseErrors:
+    handler: handler.parseErrors
+    events:
+      - http:
+          path: reports/{reportid}/errors
+          method: get
+  parseGps:
+    handler: handler.parseGps
+    events:
+      - http:
+          path: reports/{reportid}/gpspath
+          method: get          
+  parseImu:
+    handler: handler.parseImu
+    events:
+      - http:
+          path: reports/{reportid}/imu
+          method: get   
+  parsePower:
+    handler: handler.parsePower
+    events:
+      - http:
+          path: reports/{reportid}/power
+          method: get          

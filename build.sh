@@ -2,17 +2,13 @@
 
 lessc less/customize.less web/css/customize.css
 
-# Do npm install to update all the required modules
+# Use npm to update all the required modules for the lambdas
 ( 
-	cd aws
-	
-	rm -f *zip
-	
-	for name in dataflash* 
+	for name in visualizer-api visualizer-backend
 	do
 		(
 			cd $name
-			npm install
+			npm update
 		)
 	done
 )

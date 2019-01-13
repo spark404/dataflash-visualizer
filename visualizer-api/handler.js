@@ -1,9 +1,6 @@
 "use strict";
 
 const AWS = require("aws-sdk");
-const doc = require("dynamodb-doc");
-const Q = require("kew");
-const dataflashlog = require("dataflashlog");
 const util = require("util");
 
 const parsers = require("./parsers");
@@ -11,220 +8,128 @@ const parsers = require("./parsers");
 const bucket = process.env.BUCKET;
 const database = process.env.DATABASE;
 
-module.exports.listItems = function(event, context, callback) {
-  listEntries()
-    .then(data => response(callback, data, 200))
-    .fail(err => response(callback, err, 500));
+class ResourceNotFound extends Error {
+    constructor(...args) {
+        super(...args);
+        Error.captureStackTrace(this, ResourceNotFound);
+    }
+}
+
+module.exports.listItems = async (event) => {
+    console.log("*** listItems ***");
+    console.log("event: " + util.inspect(event));
+
+    try {
+        return listEntries();
+    } catch (error) {
+        console.log("listEntries failed", error);
+        return {
+            error_type: "server_error",
+            message: error.message
+        };
+    }
 };
 
-module.exports.retrieveMetadata = function(event, context, callback) {
-  if (event === null || !event.hasOwnProperty("resource")) {
-    callback(new Error("Probably not a request from the API gateway"));
-  }
+module.exports.retrieveMetadata = async (event) => {
+    console.log("*** retrieveMetadata ***");
+    console.log("event: " + util.inspect(event));
 
-  if (!event.pathParameters.hasOwnProperty("reportid") || event.pathParameters["reportid"] === undefined) {
-    response(callback, new Error("Missing required path parameter reportId"), 409);
-  }
-
-  console.log("*** MAIN ***");
-  console.log("event: " + util.inspect(event));
-  console.log("context: " + util.inspect(context));
-  retrieveEntryByFilename(event.pathParameters.reportid)
-    .then(data => response(callback, data, 200))
-    .fail(err => response(callback, err, 500));
+    const entry = await retrieveEntryByFilename(event.reportid);
+    if (entry.hasOwnProperty('Item')) {
+        return entry.Item;
+    } else {
+        throw new ResourceNotFound("ResourceNotFound: " + event.reportid + " not found");
+    }
 };
 
-module.exports.parseAttitude = function(event, context, callback) {
-  if (event === null || !event.hasOwnProperty("resource")) {
-    callback(new Error("Probably not a request from the API gateway"));
-  }
+module.exports.parseAttitude = async (event) => {
+    console.log("*** parseAttitude ***");
+    console.log("event: " + util.inspect(event));
 
-  if (!event.pathParameters.hasOwnProperty("reportid") || event.pathParameters["reportid"] === undefined) {
-    response(callback, new Error("Missing required path parameter reportId"), 409);
-  }
+    const dataFile = await getS3Object(bucket, event.reportid);
 
-  console.log("*** MAIN ***");
-  console.log("event: " + util.inspect(event));
-  console.log("context: " + util.inspect(context));
-  getS3Object(bucket, event.pathParameters.reportid)
-    .then(data => parsers.parseAttitude(event.pathParameters.reportid, data))
-    .then(data => response(callback, data, 200))
-    .fail(err => response(callback, err, 500));
-};  
+    return parsers.parseAttitude(event.reportid, dataFile)
+};
 
-module.exports.parseErrors = function(event, context, callback) {
-  if (event === null || !event.hasOwnProperty("resource")) {
-    callback(new Error("Probably not a request from the API gateway"));
-  }
+module.exports.parseErrors = async (event) => {
+    console.log("*** parseErrors ***");
+    console.log("event: " + util.inspect(event));
 
-  if (!event.pathParameters.hasOwnProperty("reportid") || event.pathParameters["reportid"] === undefined) {
-    response(callback, new Error("Missing required path parameter reportId"), 409);
-  }
+    const dataFile = await getS3Object(bucket, event.reportid);
 
-  console.log("*** MAIN ***");
-  console.log("event: " + util.inspect(event));
-  console.log("context: " + util.inspect(context));
-  getS3Object(bucket, event.pathParameters.reportid)
-    .then(data => parsers.parseErrors(event.pathParameters.reportid, data))
-    .then(data => response(callback, data, 200))
-    .fail(err => response(callback, err, 500));
-};  
+    return parsers.parseErrors(event.reportid, dataFile)
+};
 
-module.exports.parseGps = function(event, context, callback) {
-  if (event === null || !event.hasOwnProperty("resource")) {
-    callback(new Error("Probably not a request from the API gateway"));
-  }
+module.exports.parseGps = async (event) => {
+    console.log("*** parseGps ***");
+    console.log("event: " + util.inspect(event));
 
-  if (!event.pathParameters.hasOwnProperty("reportid") || event.pathParameters["reportid"] === undefined) {
-    response(callback, new Error("Missing required path parameter reportId"), 409);
-  }
+    const dataFile = await getS3Object(bucket, event.reportid);
 
-  console.log("*** MAIN ***");
-  console.log("event: " + util.inspect(event));
-  console.log("context: " + util.inspect(context));
-  getS3Object(bucket, event.pathParameters.reportid)
-    .then(data => parsers.parseGps(event.pathParameters.reportid, data))
-    .then(data => response(callback, data, 200))
-    .fail(err => response(callback, err, 500));
-};  
+    return parsers.parseGps(event.reportid, dataFile)
+};
 
-module.exports.parseImu = function(event, context, callback) {
-  if (event === null || !event.hasOwnProperty("resource")) {
-    callback(new Error("Probably not a request from the API gateway"));
-  }
+module.exports.parseImu = async (event) => {
+    console.log("*** parseImu ***");
+    console.log("event: " + util.inspect(event));
 
-  if (!event.pathParameters.hasOwnProperty("reportid") || event.pathParameters["reportid"] === undefined) {
-    response(callback, new Error("Missing required path parameter reportId"), 409);
-  }
+    const dataFile = await getS3Object(bucket, event.reportid);
 
-  console.log("*** MAIN ***");
-  console.log("event: " + util.inspect(event));
-  console.log("context: " + util.inspect(context));
-  getS3Object(bucket, event.pathParameters.reportid)
-    .then(data => parsers.parseImu(event.pathParameters.reportid, data))
-    .then(data => response(callback, data, 200))
-    .fail(err => response(callback, err, 500));
-};  
+    return parsers.parseImu(event.reportid, dataFile)
+};
 
-module.exports.parsePower = function(event, context, callback) {
-  if (event === null || !event.hasOwnProperty("resource")) {
-    callback(new Error("Probably not a request from the API gateway"));
-  }
+module.exports.parsePower = async (event) => {
+    console.log("*** parsePower ***");
+    console.log("event: " + util.inspect(event));
 
-  if (!event.pathParameters.hasOwnProperty("reportid") || event.pathParameters["reportid"] === undefined) {
-    response(callback, new Error("Missing required path parameter reportId"), 409);
-  }
+    const dataFile = await getS3Object(bucket, event.reportid);
 
-  console.log("*** MAIN ***");
-  console.log("event: " + util.inspect(event));
-  console.log("context: " + util.inspect(context));
-  getS3Object(bucket, event.pathParameters.reportid)
-    .then(data => parsers.parsePower(event.pathParameters.reportid, data))
-    .then(data => response(callback, data, 200))
-    .fail(err => response(callback, err, 500));
-};  
+    return parsers.parsePower(event.reportid, dataFile)
+};
 
 function listEntries() {
-  const docClient = new AWS.DynamoDB.DocumentClient();
-  console.log("Entering queryDatabase");
-  const defer = Q.defer();
+    const docClient = new AWS.DynamoDB.DocumentClient();
 
-  var params = {
-    TableName : database,
-    AttributesToGet : [
-      "filename",
-      "altitude",
-      "attitude",
-      "err",
-      "gps",
-      "imu",
-      "ntun",
-      "power",
-      "size",
-      "timestamps"
-    ]
-  };
+    const params = {
+        TableName: database,
+        AttributesToGet: [
+            "filename",
+            "altitude",
+            "attitude",
+            "err",
+            "gps",
+            "imu",
+            "ntun",
+            "power",
+            "size",
+            "timestamps"
+        ]
+    };
 
-  docClient.scan(params, function(err, data) {
-    if (err) {
-      defer.reject(err);
-    } else {
-      defer.resolve(data.Items);
-    }
-  });
-
-  return defer.promise;
+    return docClient.scan(params).promise();
 }
 
 function retrieveEntryByFilename(filename) {
-  const docClient = new AWS.DynamoDB.DocumentClient();
-  console.log("Entering queryDatabase");
-  const defer = Q.defer();
+    const docClient = new AWS.DynamoDB.DocumentClient();
 
-  var params = {
-    TableName : database,
-    Key: {
-      filename: filename
-    }
-  };
-
-  docClient.get(params, function(err, data) {
-    if (err) {
-      defer.reject(err);
-    } else {
-      defer.resolve(data.Item);
-    }
-  });
-
-  return defer.promise;
-}
-
-function response(callback, data, statuscode) {
-  console.log("Entering response");
-
-  if (data === undefined) {
-    var errorMessage = {};
-    errorMessage.message = "No entry found in database";
-
-    const response = {
-      statusCode: 404,
-      body: JSON.stringify(errorMessage)
+    const params = {
+        TableName: database,
+        Key: {
+            filename: filename
+        }
     };
 
-    callback(null, response);
-  } else {
-    const response = {
-      statusCode: statuscode,
-      headers: {
-        "Access-Control-Allow-Origin": "*"
-      },
-      body: JSON.stringify(data)
-    };
-
-    callback(null, response);
-  }
+    return docClient.get(params).promise();
 }
 
 function getS3Object(bucket, key) {
-  var s3 = new AWS.S3();
-  console.log("Entering getS3Object with bucket=" + bucket + " and key=" + key);
+    console.log("Entering getS3Object with bucket=" + bucket + " and key=" + key);
+    const s3 = new AWS.S3();
 
-  const defer = Q.defer();
-  const params = {
-    Bucket: bucket,
-    Key: key,
-  };
-  s3.getObject(params, function(err, data) {
-    if (err) {
-      console.log("Error: " + err);
-      defer.reject();
-    }
+    const params = {
+        Bucket: bucket,
+        Key: key,
+    };
 
-    console.log("File data : " + util.inspect(data));
-    console.log("OK");
-    defer.resolve(data);
-  });
-
-  console.log("Leaving getS3Object");
-  return defer.promise;
+    return s3.getObject(params).promise();
 }

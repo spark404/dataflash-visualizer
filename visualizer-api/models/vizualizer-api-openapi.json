@@ -1,0 +1,412 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "visualizer-api",
+    "version": "2019-01-12T17:11:45Z"
+  },
+  "servers": [
+    {
+      "url": "https://dataflashapi.strocamp.net/{basePath}",
+      "variables": {
+        "basePath": {
+          "default": "/api-dev"
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/reports/{reportid}/errors": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "headers": {
+              "access-control-allow-origin": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errors"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "uri": "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:199710627848:function:visualizer-api-dev-parseErrors:${stageVariables.lambdaAlias}/invocations",
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.access-control-allow-origin": "'*'"
+              },
+              "responseTemplates": {
+                "application/json": "#set($inputRoot = $input.path('$'))\n[\n#foreach($elem in $inputRoot)\n {\n  \"timestamp\" : $elem.timestamp,\n  \"subsys\" : $elem.subsys,\n  \"ecode\" : $elem.ecode\n} \n#if($foreach.hasNext),#end\n#end\n]"
+              }
+            }
+          },
+          "requestTemplates": {
+            "application/json": "{ \n    \"reportid\": \"$input.params('reportid')\"\n}"
+          },
+          "passthroughBehavior": "when_no_templates",
+          "httpMethod": "POST",
+          "contentHandling": "CONVERT_TO_TEXT",
+          "type": "aws"
+        }
+      }
+    },
+    "/reports/{reportid}/attitude": {
+      "get": {
+        "x-amazon-apigateway-integration": {
+          "uri": "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:199710627848:function:visualizer-api-dev-parseAttitude:${stageVariables.lambdaAlias}/invocations",
+          "responses": {
+            "default": {
+              "statusCode": "200"
+            }
+          },
+          "passthroughBehavior": "when_no_match",
+          "httpMethod": "POST",
+          "contentHandling": "CONVERT_TO_TEXT",
+          "type": "aws"
+        }
+      }
+    },
+    "/reports/{reportid}/power": {
+      "get": {
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "200"
+            }
+          },
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "passthroughBehavior": "when_no_match",
+          "type": "mock"
+        }
+      }
+    },
+    "/reports/{reportid}/gpspath": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "headers": {
+              "access-control-allow-origin": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/gpspath"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "uri": "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:199710627848:function:visualizer-api-dev-parseGps:${stageVariables.lambdaAlias}/invocations",
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.access-control-allow-origin": "'*'"
+              },
+              "responseTemplates": {
+                "application/json": "#set($inputRoot = $input.path('$'))\n[\n\n#foreach($elem in $inputRoot)\n {\n  \"lng\" : $elem.lng,\n  \"lat\" : $elem.lat,\n  \"alt\" : $elem.alt,\n  \"nsats\" : $elem.nsats,\n  \"hdop\" : $elem.hdop,\n  \"spd\" : $elem.spd,\n  \"flightmode\" : $elem.flightMode\n} \n#if($foreach.hasNext),#end\n#end\n]"
+              }
+            }
+          },
+          "requestTemplates": {
+            "application/json": "{ \n    \"reportid\": \"$input.params('reportid')\"\n}"
+          },
+          "passthroughBehavior": "when_no_templates",
+          "httpMethod": "POST",
+          "contentHandling": "CONVERT_TO_TEXT",
+          "type": "aws"
+        }
+      }
+    },
+    "/reports/{reportid}/imu": {
+      "get": {
+        "x-amazon-apigateway-integration": {
+          "responses": {
+            "default": {
+              "statusCode": "200"
+            }
+          },
+          "requestTemplates": {
+            "application/json": "{\"statusCode\": 200}"
+          },
+          "passthroughBehavior": "when_no_match",
+          "type": "mock"
+        }
+      }
+    },
+    "/reports": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/overview"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "uri": "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:199710627848:function:visualizer-api-dev-listItems:${stageVariables.lambdaAlias}/invocations",
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              },
+              "responseTemplates": {
+                "application/json": "#set($inputRoot = $input.path('$'))\n[\n\n#foreach($elem in $inputRoot.Items)\n {\n  \"filename\" : \"$elem.filename\",\n  \"ntun\" : $elem.ntun,\n  \"size\" : $elem.size,\n  \"attitude\" : $elem.attitude,\n  \"imu\" : $elem.imu,\n  \"altitude\" : $elem.altitude,\n  \"err\" : $elem.err,\n  \"power\" : $elem.power,\n  \"gps\" : $elem.gps,\n  \"timestamps\" : {\n    \"start\" : $elem.timestamps.start,\n    \"finish\" : $elem.timestamps.finish\n  }\n} \n#if($foreach.hasNext),#end\n#end\n]"
+              }
+            }
+          },
+          "passthroughBehavior": "when_no_templates",
+          "httpMethod": "POST",
+          "contentHandling": "CONVERT_TO_TEXT",
+          "type": "aws"
+        }
+      }
+    },
+    "/reports/{reportid}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "headers": {
+              "Access-Control-Allow-Origin": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/metadata"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "x-amazon-apigateway-integration": {
+          "uri": "arn:aws:apigateway:eu-west-1:lambda:path/2015-03-31/functions/arn:aws:lambda:eu-west-1:199710627848:function:visualizer-api-dev-retrieveMetadata:${stageVariables.lambdaAlias}/invocations",
+          "responses": {
+            "default": {
+              "statusCode": "200",
+              "responseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'"
+              },
+              "responseTemplates": {
+                "application/json": "#set($inputRoot = $input.path('$'))\n{\n  \"filename\" : \"$inputRoot.filename\",\n  \"ntun\" : $inputRoot.ntun,\n  \"size\" : $inputRoot.size,\n  \"attitude\" : $inputRoot.attitude,\n  \"imu\" : $inputRoot.imu,\n  \"altitude\" : $inputRoot.altitude,\n  \"err\" : $inputRoot.err,\n  \"power\" : $inputRoot.power,\n  \"gps\" : $inputRoot.gps,\n  \"timestamps\" : {\n    \"start\" : $inputRoot.timestamps.start,\n    \"finish\" : $inputRoot.timestamps.finish\n  }\n}"
+              }
+            },
+            "ResourceNotFound.*": {
+              "statusCode": "404",
+              "responseTemplates": {
+                "application/json": "#set($inputRoot = $input.path('$'))\n{\n  \"message\" : \"Resource not found\"\n}"
+              }
+            }
+          },
+          "requestTemplates": {
+            "application/json": "{ \n    \"reportid\": \"$input.params('reportid')\"\n}"
+          },
+          "passthroughBehavior": "when_no_templates",
+          "httpMethod": "POST",
+          "contentHandling": "CONVERT_TO_TEXT",
+          "type": "aws"
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "overview": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/metadata"
+        }
+      },
+      "metadata": {
+        "title": "Dataflash log metadata",
+        "required": [
+          "filename",
+          "size",
+          "timestamps"
+        ],
+        "type": "object",
+        "properties": {
+          "filename": {
+            "pattern": "^(.*)$",
+            "type": "string"
+          },
+          "ntun": {
+            "type": "boolean",
+            "default": false
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32",
+            "default": 0
+          },
+          "attitude": {
+            "type": "boolean",
+            "default": false
+          },
+          "imu": {
+            "type": "boolean",
+            "default": false
+          },
+          "altitude": {
+            "type": "boolean",
+            "default": false
+          },
+          "err": {
+            "type": "boolean",
+            "default": false
+          },
+          "power": {
+            "type": "boolean",
+            "default": false
+          },
+          "gps": {
+            "type": "boolean",
+            "default": false
+          },
+          "timestamps": {
+            "required": [
+              "finish",
+              "start"
+            ],
+            "type": "object",
+            "properties": {
+              "start": {
+                "type": "number",
+                "default": 0
+              },
+              "finish": {
+                "type": "number",
+                "default": 0
+              }
+            }
+          }
+        }
+      },
+      "alert": {
+        "title": "Dataflash alert",
+        "required": [
+          "ecode",
+          "subsys",
+          "timestamp"
+        ],
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "integer"
+          },
+          "subsys": {
+            "type": "integer"
+          },
+          "ecode": {
+            "type": "integer"
+          }
+        }
+      },
+      "gpspath": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/gpsentry"
+        }
+      },
+      "Error": {
+        "title": "Error Schema",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "gpsentry": {
+        "title": "Dataflash log gpsentry",
+        "required": [
+          "alt",
+          "flightmode",
+          "hdop",
+          "lat",
+          "lng",
+          "nsats",
+          "spd"
+        ],
+        "type": "object",
+        "properties": {
+          "lng": {
+            "type": "number"
+          },
+          "lat": {
+            "type": "number"
+          },
+          "alt": {
+            "type": "number"
+          },
+          "nsats": {
+            "type": "integer",
+            "format": "int32",
+            "default": 0
+          },
+          "hdop": {
+            "type": "number"
+          },
+          "spd": {
+            "type": "number"
+          },
+          "flightmode": {
+            "type": "integer",
+            "format": "int32",
+            "default": 0
+          }
+        }
+      },
+      "errors": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/alert"
+        }
+      }
+    }
+  }
+}
